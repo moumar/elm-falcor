@@ -1,0 +1,15 @@
+{
+    "version": "0.0.1",
+    "summary": "falcor bindings for elm",
+    "repository": "https://github.com/moumar/elm-factor",
+    "license": "BSD3",
+    "source-directories": [
+        ".",
+    ],
+    "exposed-modules": ['Falcor'],
+    "native-modules": true,
+    "dependencies": {
+        "elm-lang/core": "3.0.0 <= v < 4.0.0"
+    },
+    "elm-version": "0.16.0 <= v < 0.17.0"
+}
