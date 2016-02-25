@@ -1,0 +1,23 @@
+{
+  "name": "elm-falcor",
+  "version": "1.0.0",
+  "description": "elm bindings for falcor js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moumar/elm-falcor.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/moumar/elm-falcor/issues"
+  },
+  "homepage": "https://github.com/moumar/elm-falcor#readme",
+  "dependencies": {
+    "falcor": "^0.1.16",
+    "falcor-http-datasource": "^0.1.3"
+  }
+}
