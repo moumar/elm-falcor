@@ -4,7 +4,7 @@
     "repository": "https://github.com/moumar/elm-factor",
     "license": "BSD3",
     "source-directories": [
-        ".",
+        "."
     ],
     "exposed-modules": ['Falcor'],
     "native-modules": true,

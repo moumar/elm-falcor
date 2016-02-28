@@ -1,16 +1,20 @@
 var falcor = require('falcor');
 var HttpDataSource = require('falcor-http-datasource');
 
+Elm.Native.Falcor = {};
+
+
 // make is a function that takes an instance of the
 // elm runtime
 // returns an object where:
 //      keys are names to be accessed in pure Elm
 //      values are either functions or values
-var make = function make(elm) {
+Elm.Native.Falcor.make = function make(elm) {
     // If Native isn't already bound on elm, bind it!
     elm.Native = elm.Native || {};
     // then the same for our module
     elm.Native.Falcor = elm.Native.Falcor || {};
+    elm.Native.Falcor.make = make;
 
     // `values` is where the object returned by make ends up internally
     // return if it's already set, since you only want one definition of
@@ -20,6 +24,7 @@ var make = function make(elm) {
 
     var Task = Elm.Native.Task.make(elm);
     var Utils = Elm.Native.Utils;
+
     function createModel(url) {
       if (url.length > 0) {
         return new falcor.Model({source: new HttpDataSource(url)});
