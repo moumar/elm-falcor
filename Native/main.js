@@ -1,5 +1,6 @@
 var falcor = require('falcor');
 var HttpDataSource = require('falcor-http-datasource');
+window.falcor = falcor;
 
 Elm.Native.Falcor = {};
 
@@ -25,12 +26,31 @@ Elm.Native.Falcor.make = function make(elm) {
     var Task = Elm.Native.Task.make(elm);
     var Utils = Elm.Native.Utils;
 
+    function filterPathKeys(obj) {
+      var out = {};
+      Object.keys(obj).forEach(function(key) {
+        if(key != "$__path") {
+          var val = obj[key];
+          if ((typeof val) == "object" && !(val instanceof Array)) {
+            out[key] = filterPathKeys(val);
+          } else {
+            out[key] = val;
+          }
+        }
+      });
+      return out;
+    }
+
     function createModel(url) {
       if (url.length > 0) {
         return new falcor.Model({source: new HttpDataSource(url)});
       } else {
         return new falcor.Model();
       }
+    }
+
+    function createModelWithCache(cache) {
+      return new falcor.Model({cache: cache});
     }
 
     function get(model, dataList) {
@@ -44,8 +64,9 @@ Elm.Native.Falcor.make = function make(elm) {
         model.get
           .apply(model, args)
           .then(function(resp) {
-            console.log(resp.json);
-            return callback(Task.succeed(resp.json));
+            var out = filterPathKeys(resp.json);
+            // console.log("resp", out);
+            return callback(Task.succeed(out));
           })
           .catch(function(err) {
             return callback(Task.fail(err));
@@ -63,6 +84,7 @@ Elm.Native.Falcor.make = function make(elm) {
     // return the object of your module's stuff!
     return elm.Native.Falcor.values = {
       createModel: createModel,
+      createModelWithCache: createModelWithCache,
       get: F2(get),
       set: set,
       call: call
