@@ -15052,7 +15052,7 @@ Elm.Native.Falcor.make = function make(elm) {
         model.get
           .apply(model, args)
           .then(function(resp) {
-            // console.log(resp.json);
+            console.log(resp.json);
             return callback(Task.succeed(resp.json));
           })
           .catch(function(err) {
