@@ -10,47 +10,32 @@ Elm.Native.Falcor = {};
 // returns an object where:
 //      keys are names to be accessed in pure Elm
 //      values are either functions or values
-Elm.Native.Falcor.make = function make(elm) {
+Elm.Native.Falcor.make = function make(localRuntime) {
     // If Native isn't already bound on elm, bind it!
-    elm.Native = elm.Native || {};
+    localRuntime.Native = localRuntime.Native || {};
     // then the same for our module
-    elm.Native.Falcor = elm.Native.Falcor || {};
-    elm.Native.Falcor.make = make;
+    localRuntime.Native.Falcor = localRuntime.Native.Falcor || {};
+    localRuntime.Native.Falcor.make = make;
 
     // `values` is where the object returned by make ends up internally
     // return if it's already set, since you only want one definition of
     // values for speed reasons
-    if (elm.Native.Falcor.values)
-      return elm.Native.Falcor.values;
+    if (localRuntime.Native.Falcor.values)
+      return localRuntime.Native.Falcor.values;
 
-    var Task = Elm.Native.Task.make(elm);
+    var Task = Elm.Native.Task.make(localRuntime);
     var Utils = Elm.Native.Utils;
+    var Maybe = Elm.Maybe.make(localRuntime);
 
-    function filterPathKeys(obj) {
-      var out = {};
-      Object.keys(obj).forEach(function(key) {
-        if(key != "$__path") {
-          var val = obj[key];
-          if ((typeof val) == "object" && !(val instanceof Array)) {
-            out[key] = filterPathKeys(val);
-          } else {
-            out[key] = val;
-          }
-        }
-      });
-      return out;
-    }
-
-    function createModel(url) {
-      if (url.length > 0) {
-        return new falcor.Model({source: new HttpDataSource(url)});
-      } else {
-        return new falcor.Model();
+    function createModel(options) {
+      var modelOptions = {};
+      if (options.url.ctor === 'Just') {
+        modelOptions.source = new HttpDataSource(options.url._0);
       }
-    }
-
-    function createModelWithCache(cache) {
-      return new falcor.Model({cache: cache});
+      if (options.cache.ctor === 'Just') {
+        modelOptions.cache = options.cache._0;
+      }
+      return new falcor.Model(modelOptions);
     }
 
     function get(model, dataList) {
@@ -82,11 +67,26 @@ Elm.Native.Falcor.make = function make(elm) {
 
     }
     // return the object of your module's stuff!
-    return elm.Native.Falcor.values = {
+    return localRuntime.Native.Falcor.values = {
       createModel: createModel,
-      createModelWithCache: createModelWithCache,
       get: F2(get),
       set: set,
       call: call
     };
 };
+
+
+function filterPathKeys(obj) {
+  var out = {};
+  Object.keys(obj).forEach(function(key) {
+    if(key != "$__path") {
+      var val = obj[key];
+      if ((typeof val) == "object" && !(val instanceof Array)) {
+        out[key] = filterPathKeys(val);
+      } else {
+        out[key] = val;
+      }
+    }
+  });
+  return out;
+}

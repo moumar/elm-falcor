@@ -6,12 +6,13 @@ import Native.Falcor
 
 type alias Model = Json.Value
 
-createModel : String -> Model
+type alias Options =
+  { cache: Maybe Json.Value
+  , url: Maybe String
+  }
+
+createModel : Options -> Model
 createModel = Native.Falcor.createModel
-
-
-createModelWithCache : Json.Value -> Model
-createModelWithCache = Native.Falcor.createModelWithCache
 
 
 get : Model -> List String -> Task err Json.Value
