@@ -35,7 +35,9 @@ Elm.Native.Falcor.make = function make(localRuntime) {
       if (options.cache.ctor === 'Just') {
         modelOptions.cache = options.cache._0;
       }
-      return new falcor.Model(modelOptions);
+      var model = new falcor.Model(modelOptions);
+      window.model = model;
+      return model;
     }
 
     function get(model, dataList) {
@@ -50,7 +52,7 @@ Elm.Native.Falcor.make = function make(localRuntime) {
           .apply(model, args)
           .then(function(resp) {
             var out = filterPathKeys(resp.json);
-            // console.log("resp", out);
+            // console.log("resp", args, out);
             return callback(Task.succeed(out));
           })
           .catch(function(err) {
