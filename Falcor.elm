@@ -3,6 +3,7 @@ module Falcor where
 import Json.Decode as Json
 import Task exposing (Task)
 import Native.Falcor
+import String
 
 type alias Model = Json.Value
 
@@ -17,3 +18,12 @@ createModel = Native.Falcor.createModel
 
 get : Model -> List String -> Task err Json.Value
 get = Native.Falcor.get
+
+hashToList : List (String, a) -> List a
+hashToList lst =
+  List.sortBy
+    (fst >> String.toInt >> Result.withDefault -1)
+    lst
+  |> List.map snd
+
+
