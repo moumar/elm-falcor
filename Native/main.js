@@ -51,11 +51,20 @@ Elm.Native.Falcor.make = function make(localRuntime) {
         model.get
           .apply(model, args)
           .then(function(resp) {
-            var out = filterPathKeys(resp.json);
-            // console.log("resp", args, out);
-            return callback(Task.succeed(out));
+            if (resp && resp.json) {
+              console.log("resp", resp);
+              var out = filterPathKeys(resp.json);
+              console.log("resp", args, out);
+              return callback(Task.succeed(out));
+            } else {
+              // console.log("empty response");
+              // return callback(Task.succeed({}));
+              throw "empty response";
+            }
           })
           .catch(function(err) {
+            console.log("err", args, err);
+
             return callback(Task.fail(err));
           });
       });
@@ -80,15 +89,17 @@ Elm.Native.Falcor.make = function make(localRuntime) {
 
 function filterPathKeys(obj) {
   var out = {};
-  Object.keys(obj).forEach(function(key) {
-    if(key != "$__path") {
-      var val = obj[key];
-      if ((typeof val) == "object" && !(val instanceof Array)) {
-        out[key] = filterPathKeys(val);
-      } else {
-        out[key] = val;
+  if (obj != null) {
+    Object.keys(obj).forEach(function(key) {
+      if(key != "$__path") {
+        var val = obj[key];
+        if ((typeof val) == "object" && !(val instanceof Array)) {
+          out[key] = filterPathKeys(val);
+        } else {
+          out[key] = val;
+        }
       }
-    }
-  });
+    });
+  }
   return out;
 }

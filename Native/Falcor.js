@@ -1,100 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var falcor = require('falcor');
-var HttpDataSource = require('falcor-http-datasource');
-window.falcor = falcor;
-
-Elm.Native.Falcor = {};
-
-
-// make is a function that takes an instance of the
-// elm runtime
-// returns an object where:
-//      keys are names to be accessed in pure Elm
-//      values are either functions or values
-Elm.Native.Falcor.make = function make(localRuntime) {
-    // If Native isn't already bound on elm, bind it!
-    localRuntime.Native = localRuntime.Native || {};
-    // then the same for our module
-    localRuntime.Native.Falcor = localRuntime.Native.Falcor || {};
-    localRuntime.Native.Falcor.make = make;
-
-    // `values` is where the object returned by make ends up internally
-    // return if it's already set, since you only want one definition of
-    // values for speed reasons
-    if (localRuntime.Native.Falcor.values)
-      return localRuntime.Native.Falcor.values;
-
-    var Task = Elm.Native.Task.make(localRuntime);
-    var Utils = Elm.Native.Utils;
-    var Maybe = Elm.Maybe.make(localRuntime);
-
-    function createModel(options) {
-      var modelOptions = {};
-      if (options.url.ctor === 'Just') {
-        modelOptions.source = new HttpDataSource(options.url._0);
-      }
-      if (options.cache.ctor === 'Just') {
-        modelOptions.cache = options.cache._0;
-      }
-      var model = new falcor.Model(modelOptions);
-      window.model = model;
-      return model;
-    }
-
-    function get(model, dataList) {
-      var args = [];
-      while (dataList.ctor !== '[]') {
-        args.push(dataList._0);
-        dataList = dataList._1;
-      }
-      return Task.asyncFunction(function(callback) {
-        // console.log(args);
-        model.get
-          .apply(model, args)
-          .then(function(resp) {
-            var out = filterPathKeys(resp.json);
-            // console.log("resp", args, out);
-            return callback(Task.succeed(out));
-          })
-          .catch(function(err) {
-            return callback(Task.fail(err));
-          });
-      });
-    }
-
-    function set() {
-
-    }
-
-    function call() {
-
-    }
-    // return the object of your module's stuff!
-    return localRuntime.Native.Falcor.values = {
-      createModel: createModel,
-      get: F2(get),
-      set: set,
-      call: call
-    };
-};
-
-
-function filterPathKeys(obj) {
-  var out = {};
-  Object.keys(obj).forEach(function(key) {
-    if(key != "$__path") {
-      var val = obj[key];
-      if ((typeof val) == "object" && !(val instanceof Array)) {
-        out[key] = filterPathKeys(val);
-      } else {
-        out[key] = val;
-      }
-    }
-  });
-  return out;
-}
-
-},{"falcor":38,"falcor-http-datasource":2}],2:[function(require,module,exports){
 'use strict';
 var request = require('./request');
 var buildQueryObject = require('./buildQueryObject');
@@ -195,7 +99,7 @@ XMLHttpSource['default'] = XMLHttpSource;
 // commonjs
 module.exports = XMLHttpSource;
 
-},{"./buildQueryObject":3,"./request":6}],3:[function(require,module,exports){
+},{"./buildQueryObject":2,"./request":5}],2:[function(require,module,exports){
 'use strict';
 module.exports = function buildQueryObject(url, method, queryData) {
   var qData = [];
@@ -211,7 +115,7 @@ module.exports = function buildQueryObject(url, method, queryData) {
     keys = Object.keys(queryData);
     keys.forEach(function (k) {
       var value = (typeof queryData[k] === 'object') ? JSON.stringify(queryData[k]) : queryData[k];
-      qData.push(k + '=' + encodeURIComponent(value));
+      qData.push(k + '=' + value);
     });
   }
 
@@ -224,7 +128,7 @@ module.exports = function buildQueryObject(url, method, queryData) {
   return data;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (global){
 'use strict';
 // Get CORS support even for older IE
@@ -240,7 +144,7 @@ module.exports = function getCORSRequest() {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function (global){
 'use strict';
 module.exports = function getXMLHttpRequest() {
@@ -268,7 +172,7 @@ module.exports = function getXMLHttpRequest() {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 var getXMLHttpRequest = require('./getXMLHttpRequest');
 var getCORSRequest = require('./getCORSRequest');
@@ -491,7 +395,1646 @@ function onXhrError(observer, xhr, status, e) {
 
 module.exports = request;
 
-},{"./getCORSRequest":4,"./getXMLHttpRequest":5}],7:[function(require,module,exports){
+},{"./getCORSRequest":3,"./getXMLHttpRequest":4}],6:[function(require,module,exports){
+var falcor = require('falcor');
+var HttpDataSource = require('falcor-http-datasource');
+window.falcor = falcor;
+
+Elm.Native.Falcor = {};
+
+
+// make is a function that takes an instance of the
+// elm runtime
+// returns an object where:
+//      keys are names to be accessed in pure Elm
+//      values are either functions or values
+Elm.Native.Falcor.make = function make(localRuntime) {
+    // If Native isn't already bound on elm, bind it!
+    localRuntime.Native = localRuntime.Native || {};
+    // then the same for our module
+    localRuntime.Native.Falcor = localRuntime.Native.Falcor || {};
+    localRuntime.Native.Falcor.make = make;
+
+    // `values` is where the object returned by make ends up internally
+    // return if it's already set, since you only want one definition of
+    // values for speed reasons
+    if (localRuntime.Native.Falcor.values)
+      return localRuntime.Native.Falcor.values;
+
+    var Task = Elm.Native.Task.make(localRuntime);
+    var Utils = Elm.Native.Utils;
+    var Maybe = Elm.Maybe.make(localRuntime);
+
+    function createModel(options) {
+      var modelOptions = {};
+      if (options.url.ctor === 'Just') {
+        modelOptions.source = new HttpDataSource(options.url._0);
+      }
+      if (options.cache.ctor === 'Just') {
+        modelOptions.cache = options.cache._0;
+      }
+      var model = new falcor.Model(modelOptions);
+      window.model = model;
+      return model;
+    }
+
+    function get(model, dataList) {
+      var args = [];
+      while (dataList.ctor !== '[]') {
+        args.push(dataList._0);
+        dataList = dataList._1;
+      }
+      return Task.asyncFunction(function(callback) {
+        // console.log(args);
+        model.get
+          .apply(model, args)
+          .then(function(resp) {
+            if (resp && resp.json) {
+              console.log("resp", resp);
+              var out = filterPathKeys(resp.json);
+              console.log("resp", args, out);
+              return callback(Task.succeed(out));
+            } else {
+              // console.log("empty response");
+              // return callback(Task.succeed({}));
+              throw "empty response";
+            }
+          })
+          .catch(function(err) {
+            console.log("err", args, err);
+
+            return callback(Task.fail(err));
+          });
+      });
+    }
+
+    function set() {
+
+    }
+
+    function call() {
+
+    }
+    // return the object of your module's stuff!
+    return localRuntime.Native.Falcor.values = {
+      createModel: createModel,
+      get: F2(get),
+      set: set,
+      call: call
+    };
+};
+
+
+function filterPathKeys(obj) {
+  var out = {};
+  if (obj != null) {
+    Object.keys(obj).forEach(function(key) {
+      if(key != "$__path") {
+        var val = obj[key];
+        if ((typeof val) == "object" && !(val instanceof Array)) {
+          out[key] = filterPathKeys(val);
+        } else {
+          out[key] = val;
+        }
+      }
+    });
+  }
+  return out;
+}
+
+},{"falcor":60,"falcor-http-datasource":1}],7:[function(require,module,exports){
+"use strict";
+
+// rawAsap provides everything we need except exception management.
+var rawAsap = require("./raw");
+// RawTasks are recycled to reduce GC churn.
+var freeTasks = [];
+// We queue errors to ensure they are thrown in right order (FIFO).
+// Array-as-queue is good enough here, since we are just dealing with exceptions.
+var pendingErrors = [];
+var requestErrorThrow = rawAsap.makeRequestCallFromTimer(throwFirstError);
+
+function throwFirstError() {
+    if (pendingErrors.length) {
+        throw pendingErrors.shift();
+    }
+}
+
+/**
+ * Calls a task as soon as possible after returning, in its own event, with priority
+ * over other events like animation, reflow, and repaint. An error thrown from an
+ * event will not interrupt, nor even substantially slow down the processing of
+ * other events, but will be rather postponed to a lower priority event.
+ * @param {{call}} task A callable object, typically a function that takes no
+ * arguments.
+ */
+module.exports = asap;
+function asap(task) {
+    var rawTask;
+    if (freeTasks.length) {
+        rawTask = freeTasks.pop();
+    } else {
+        rawTask = new RawTask();
+    }
+    rawTask.task = task;
+    rawAsap(rawTask);
+}
+
+// We wrap tasks with recyclable task objects.  A task object implements
+// `call`, just like a function.
+function RawTask() {
+    this.task = null;
+}
+
+// The sole purpose of wrapping the task is to catch the exception and recycle
+// the task object after its single use.
+RawTask.prototype.call = function () {
+    try {
+        this.task.call();
+    } catch (error) {
+        if (asap.onerror) {
+            // This hook exists purely for testing purposes.
+            // Its name will be periodically randomized to break any code that
+            // depends on its existence.
+            asap.onerror(error);
+        } else {
+            // In a web browser, exceptions are not fatal. However, to avoid
+            // slowing down the queue of pending tasks, we rethrow the error in a
+            // lower priority turn.
+            pendingErrors.push(error);
+            requestErrorThrow();
+        }
+    } finally {
+        this.task = null;
+        freeTasks[freeTasks.length] = this;
+    }
+};
+
+},{"./raw":8}],8:[function(require,module,exports){
+(function (global){
+"use strict";
+
+// Use the fastest means possible to execute a task in its own turn, with
+// priority over other events including IO, animation, reflow, and redraw
+// events in browsers.
+//
+// An exception thrown by a task will permanently interrupt the processing of
+// subsequent tasks. The higher level `asap` function ensures that if an
+// exception is thrown by a task, that the task queue will continue flushing as
+// soon as possible, but if you use `rawAsap` directly, you are responsible to
+// either ensure that no exceptions are thrown from your task, or to manually
+// call `rawAsap.requestFlush` if an exception is thrown.
+module.exports = rawAsap;
+function rawAsap(task) {
+    if (!queue.length) {
+        requestFlush();
+        flushing = true;
+    }
+    // Equivalent to push, but avoids a function call.
+    queue[queue.length] = task;
+}
+
+var queue = [];
+// Once a flush has been requested, no further calls to `requestFlush` are
+// necessary until the next `flush` completes.
+var flushing = false;
+// `requestFlush` is an implementation-specific method that attempts to kick
+// off a `flush` event as quickly as possible. `flush` will attempt to exhaust
+// the event queue before yielding to the browser's own event loop.
+var requestFlush;
+// The position of the next task to execute in the task queue. This is
+// preserved between calls to `flush` so that it can be resumed if
+// a task throws an exception.
+var index = 0;
+// If a task schedules additional tasks recursively, the task queue can grow
+// unbounded. To prevent memory exhaustion, the task queue will periodically
+// truncate already-completed tasks.
+var capacity = 1024;
+
+// The flush function processes all tasks that have been scheduled with
+// `rawAsap` unless and until one of those tasks throws an exception.
+// If a task throws an exception, `flush` ensures that its state will remain
+// consistent and will resume where it left off when called again.
+// However, `flush` does not make any arrangements to be called again if an
+// exception is thrown.
+function flush() {
+    while (index < queue.length) {
+        var currentIndex = index;
+        // Advance the index before calling the task. This ensures that we will
+        // begin flushing on the next task the task throws an error.
+        index = index + 1;
+        queue[currentIndex].call();
+        // Prevent leaking memory for long chains of recursive calls to `asap`.
+        // If we call `asap` within tasks scheduled by `asap`, the queue will
+        // grow, but to avoid an O(n) walk for every task we execute, we don't
+        // shift tasks off the queue after they have been executed.
+        // Instead, we periodically shift 1024 tasks off the queue.
+        if (index > capacity) {
+            // Manually shift all values starting at the index back to the
+            // beginning of the queue.
+            for (var scan = 0, newLength = queue.length - index; scan < newLength; scan++) {
+                queue[scan] = queue[scan + index];
+            }
+            queue.length -= index;
+            index = 0;
+        }
+    }
+    queue.length = 0;
+    index = 0;
+    flushing = false;
+}
+
+// `requestFlush` is implemented using a strategy based on data collected from
+// every available SauceLabs Selenium web driver worker at time of writing.
+// https://docs.google.com/spreadsheets/d/1mG-5UYGup5qxGdEMWkhP6BWCz053NUb2E1QoUTU16uA/edit#gid=783724593
+
+// Safari 6 and 6.1 for desktop, iPad, and iPhone are the only browsers that
+// have WebKitMutationObserver but not un-prefixed MutationObserver.
+// Must use `global` instead of `window` to work in both frames and web
+// workers. `global` is a provision of Browserify, Mr, Mrs, or Mop.
+var BrowserMutationObserver = global.MutationObserver || global.WebKitMutationObserver;
+
+// MutationObservers are desirable because they have high priority and work
+// reliably everywhere they are implemented.
+// They are implemented in all modern browsers.
+//
+// - Android 4-4.3
+// - Chrome 26-34
+// - Firefox 14-29
+// - Internet Explorer 11
+// - iPad Safari 6-7.1
+// - iPhone Safari 7-7.1
+// - Safari 6-7
+if (typeof BrowserMutationObserver === "function") {
+    requestFlush = makeRequestCallFromMutationObserver(flush);
+
+// MessageChannels are desirable because they give direct access to the HTML
+// task queue, are implemented in Internet Explorer 10, Safari 5.0-1, and Opera
+// 11-12, and in web workers in many engines.
+// Although message channels yield to any queued rendering and IO tasks, they
+// would be better than imposing the 4ms delay of timers.
+// However, they do not work reliably in Internet Explorer or Safari.
+
+// Internet Explorer 10 is the only browser that has setImmediate but does
+// not have MutationObservers.
+// Although setImmediate yields to the browser's renderer, it would be
+// preferrable to falling back to setTimeout since it does not have
+// the minimum 4ms penalty.
+// Unfortunately there appears to be a bug in Internet Explorer 10 Mobile (and
+// Desktop to a lesser extent) that renders both setImmediate and
+// MessageChannel useless for the purposes of ASAP.
+// https://github.com/kriskowal/q/issues/396
+
+// Timers are implemented universally.
+// We fall back to timers in workers in most engines, and in foreground
+// contexts in the following browsers.
+// However, note that even this simple case requires nuances to operate in a
+// broad spectrum of browsers.
+//
+// - Firefox 3-13
+// - Internet Explorer 6-9
+// - iPad Safari 4.3
+// - Lynx 2.8.7
+} else {
+    requestFlush = makeRequestCallFromTimer(flush);
+}
+
+// `requestFlush` requests that the high priority event queue be flushed as
+// soon as possible.
+// This is useful to prevent an error thrown in a task from stalling the event
+// queue if the exception handled by Node.js’s
+// `process.on("uncaughtException")` or by a domain.
+rawAsap.requestFlush = requestFlush;
+
+// To request a high priority event, we induce a mutation observer by toggling
+// the text of a text node between "1" and "-1".
+function makeRequestCallFromMutationObserver(callback) {
+    var toggle = 1;
+    var observer = new BrowserMutationObserver(callback);
+    var node = document.createTextNode("");
+    observer.observe(node, {characterData: true});
+    return function requestCall() {
+        toggle = -toggle;
+        node.data = toggle;
+    };
+}
+
+// The message channel technique was discovered by Malte Ubl and was the
+// original foundation for this library.
+// http://www.nonblocking.io/2011/06/windownexttick.html
+
+// Safari 6.0.5 (at least) intermittently fails to create message ports on a
+// page's first load. Thankfully, this version of Safari supports
+// MutationObservers, so we don't need to fall back in that case.
+
+// function makeRequestCallFromMessageChannel(callback) {
+//     var channel = new MessageChannel();
+//     channel.port1.onmessage = callback;
+//     return function requestCall() {
+//         channel.port2.postMessage(0);
+//     };
+// }
+
+// For reasons explained above, we are also unable to use `setImmediate`
+// under any circumstances.
+// Even if we were, there is another bug in Internet Explorer 10.
+// It is not sufficient to assign `setImmediate` to `requestFlush` because
+// `setImmediate` must be called *by name* and therefore must be wrapped in a
+// closure.
+// Never forget.
+
+// function makeRequestCallFromSetImmediate(callback) {
+//     return function requestCall() {
+//         setImmediate(callback);
+//     };
+// }
+
+// Safari 6.0 has a problem where timers will get lost while the user is
+// scrolling. This problem does not impact ASAP because Safari 6.0 supports
+// mutation observers, so that implementation is used instead.
+// However, if we ever elect to use timers in Safari, the prevalent work-around
+// is to add a scroll event listener that calls for a flush.
+
+// `setTimeout` does not call the passed callback if the delay is less than
+// approximately 7 in web workers in Firefox 8 through 18, and sometimes not
+// even then.
+
+function makeRequestCallFromTimer(callback) {
+    return function requestCall() {
+        // We dispatch a timeout with a specified delay of 0 for engines that
+        // can reliably accommodate that request. This will usually be snapped
+        // to a 4 milisecond delay, but once we're flushing, there's no delay
+        // between events.
+        var timeoutHandle = setTimeout(handleTimer, 0);
+        // However, since this timer gets frequently dropped in Firefox
+        // workers, we enlist an interval handle that will try to fire
+        // an event 20 times per second until it succeeds.
+        var intervalHandle = setInterval(handleTimer, 50);
+
+        function handleTimer() {
+            // Whichever timer succeeds will cancel both timers and
+            // execute the callback.
+            clearTimeout(timeoutHandle);
+            clearInterval(intervalHandle);
+            callback();
+        }
+    };
+}
+
+// This is for `asap.js` only.
+// Its name will be periodically randomized to break any code that depends on
+// its existence.
+rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
+
+// ASAP was originally a nextTick shim included in Q. This was factored out
+// into this ASAP package. It was later adapted to RSVP which made further
+// amendments. These decisions, particularly to marginalize MessageChannel and
+// to capture the MutationObserver implementation in a closure, were integrated
+// back into ASAP proper.
+// https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],9:[function(require,module,exports){
+var pathSyntax = require("falcor-path-syntax");
+
+function sentinel(type, value, props) {
+    var copy = Object.create(null);
+    if (props != null) {
+        for(var key in props) {
+            copy[key] = props[key];
+        }
+        
+        copy["$type"] = type;
+        copy.value = value;
+        return copy;
+    }
+    else {
+        return { $type: type, value: value };
+    }    
+}
+
+module.exports = {
+    ref: function ref(path, props) {
+        return sentinel("ref", pathSyntax.fromPath(path), props);
+    },
+    atom: function atom(value, props) {
+        return sentinel("atom", value, props);        
+    },
+    undefined: function() {
+        return sentinel("atom");
+    },    
+    error: function error(errorValue, props) {
+        return sentinel("error", errorValue, props);        
+    },
+    pathValue: function pathValue(path, value) {
+        return { path: pathSyntax.fromPath(path), value: value };
+    },
+    pathInvalidation: function pathInvalidation(path) {
+        return { path: pathSyntax.fromPath(path), invalidated: true };
+    }    
+};
+
+},{"falcor-path-syntax":13}],10:[function(require,module,exports){
+module.exports = {
+    integers: 'integers',
+    ranges: 'ranges',
+    keys: 'keys'
+};
+
+},{}],11:[function(require,module,exports){
+var TokenTypes = {
+    token: 'token',
+    dotSeparator: '.',
+    commaSeparator: ',',
+    openingBracket: '[',
+    closingBracket: ']',
+    openingBrace: '{',
+    closingBrace: '}',
+    escape: '\\',
+    space: ' ',
+    colon: ':',
+    quote: 'quote',
+    unknown: 'unknown'
+};
+
+module.exports = TokenTypes;
+
+},{}],12:[function(require,module,exports){
+module.exports = {
+    indexer: {
+        nested: 'Indexers cannot be nested.',
+        needQuotes: 'unquoted indexers must be numeric.',
+        empty: 'cannot have empty indexers.',
+        leadingDot: 'Indexers cannot have leading dots.',
+        leadingComma: 'Indexers cannot have leading comma.',
+        requiresComma: 'Indexers require commas between indexer args.',
+        routedTokens: 'Only one token can be used per indexer when specifying routed tokens.'
+    },
+    range: {
+        precedingNaN: 'ranges must be preceded by numbers.',
+        suceedingNaN: 'ranges must be suceeded by numbers.'
+    },
+    routed: {
+        invalid: 'Invalid routed token.  only integers|ranges|keys are supported.'
+    },
+    quote: {
+        empty: 'cannot have empty quoted keys.',
+        illegalEscape: 'Invalid escape character.  Only quotes are escapable.'
+    },
+    unexpectedToken: 'Unexpected token.',
+    invalidIdentifier: 'Invalid Identifier.',
+    invalidPath: 'Please provide a valid path.',
+    throwError: function(err, tokenizer, token) {
+        if (token) {
+            throw err + ' -- ' + tokenizer.parseString + ' with next token: ' + token;
+        }
+        throw err + ' -- ' + tokenizer.parseString;
+    }
+};
+
+
+},{}],13:[function(require,module,exports){
+var Tokenizer = require('./tokenizer');
+var head = require('./parse-tree/head');
+var RoutedTokens = require('./RoutedTokens');
+
+var parser = function parser(string, extendedRules) {
+    return head(new Tokenizer(string, extendedRules));
+};
+
+module.exports = parser;
+
+// Constructs the paths from paths / pathValues that have strings.
+// If it does not have a string, just moves the value into the return
+// results.
+parser.fromPathsOrPathValues = function(paths, ext) {
+    if (!paths) {
+        return [];
+    }
+
+    var out = [];
+    for (var i = 0, len = paths.length; i < len; i++) {
+
+        // Is the path a string
+        if (typeof paths[i] === 'string') {
+            out[i] = parser(paths[i], ext);
+        }
+
+        // is the path a path value with a string value.
+        else if (typeof paths[i].path === 'string') {
+            out[i] = {
+                path: parser(paths[i].path, ext), value: paths[i].value
+            };
+        }
+
+        // just copy it over.
+        else {
+            out[i] = paths[i];
+        }
+    }
+
+    return out;
+};
+
+// If the argument is a string, this with convert, else just return
+// the path provided.
+parser.fromPath = function(path, ext) {
+    if (!path) {
+        return [];
+    }
+
+    if (typeof path === 'string') {
+        return parser(path, ext);
+    }
+
+    return path;
+};
+
+// Potential routed tokens.
+parser.RoutedTokens = RoutedTokens;
+
+},{"./RoutedTokens":10,"./parse-tree/head":14,"./tokenizer":19}],14:[function(require,module,exports){
+var TokenTypes = require('./../TokenTypes');
+var E = require('./../exceptions');
+var indexer = require('./indexer');
+
+/**
+ * The top level of the parse tree.  This returns the generated path
+ * from the tokenizer.
+ */
+module.exports = function head(tokenizer) {
+    var token = tokenizer.next();
+    var state = {};
+    var out = [];
+
+    while (!token.done) {
+
+        switch (token.type) {
+            case TokenTypes.token:
+                var first = +token.token[0];
+                if (!isNaN(first)) {
+                    E.throwError(E.invalidIdentifier, tokenizer);
+                }
+                out[out.length] = token.token;
+                break;
+
+            // dotSeparators at the top level have no meaning
+            case TokenTypes.dotSeparator:
+                if (out.length === 0) {
+                    E.throwError(E.unexpectedToken, tokenizer);
+                }
+                break;
+
+            // Spaces do nothing.
+            case TokenTypes.space:
+                // NOTE: Spaces at the top level are allowed.
+                // titlesById  .summary is a valid path.
+                break;
+
+
+            // Its time to decend the parse tree.
+            case TokenTypes.openingBracket:
+                indexer(tokenizer, token, state, out);
+                break;
+
+            default:
+                E.throwError(E.unexpectedToken, tokenizer);
+                break;
+        }
+
+        // Keep cycling through the tokenizer.
+        token = tokenizer.next();
+    }
+
+    if (out.length === 0) {
+        E.throwError(E.invalidPath, tokenizer);
+    }
+
+    return out;
+};
+
+
+},{"./../TokenTypes":11,"./../exceptions":12,"./indexer":15}],15:[function(require,module,exports){
+var TokenTypes = require('./../TokenTypes');
+var E = require('./../exceptions');
+var idxE = E.indexer;
+var range = require('./range');
+var quote = require('./quote');
+var routed = require('./routed');
+
+/**
+ * The indexer is all the logic that happens in between
+ * the '[', opening bracket, and ']' closing bracket.
+ */
+module.exports = function indexer(tokenizer, openingToken, state, out) {
+    var token = tokenizer.next();
+    var done = false;
+    var allowedMaxLength = 1;
+    var routedIndexer = false;
+
+    // State variables
+    state.indexer = [];
+
+    while (!token.done) {
+
+        switch (token.type) {
+            case TokenTypes.token:
+            case TokenTypes.quote:
+
+                // ensures that token adders are properly delimited.
+                if (state.indexer.length === allowedMaxLength) {
+                    E.throwError(idxE.requiresComma, tokenizer);
+                }
+                break;
+        }
+
+        switch (token.type) {
+            // Extended syntax case
+            case TokenTypes.openingBrace:
+                routedIndexer = true;
+                routed(tokenizer, token, state, out);
+                break;
+
+
+            case TokenTypes.token:
+                var t = +token.token;
+                if (isNaN(t)) {
+                    E.throwError(idxE.needQuotes, tokenizer);
+                }
+                state.indexer[state.indexer.length] = t;
+                break;
+
+            // dotSeparators at the top level have no meaning
+            case TokenTypes.dotSeparator:
+                if (!state.indexer.length) {
+                    E.throwError(idxE.leadingDot, tokenizer);
+                }
+                range(tokenizer, token, state, out);
+                break;
+
+            // Spaces do nothing.
+            case TokenTypes.space:
+                break;
+
+            case TokenTypes.closingBracket:
+                done = true;
+                break;
+
+
+            // The quotes require their own tree due to what can be in it.
+            case TokenTypes.quote:
+                quote(tokenizer, token, state, out);
+                break;
+
+
+            // Its time to decend the parse tree.
+            case TokenTypes.openingBracket:
+                E.throwError(idxE.nested, tokenizer);
+                break;
+
+            case TokenTypes.commaSeparator:
+                ++allowedMaxLength;
+                break;
+
+            default:
+                E.throwError(E.unexpectedToken, tokenizer);
+                break;
+        }
+
+        // If done, leave loop
+        if (done) {
+            break;
+        }
+
+        // Keep cycling through the tokenizer.
+        token = tokenizer.next();
+    }
+
+    if (state.indexer.length === 0) {
+        E.throwError(idxE.empty, tokenizer);
+    }
+
+    if (state.indexer.length > 1 && routedIndexer) {
+        E.throwError(idxE.routedTokens, tokenizer);
+    }
+
+    // Remember, if an array of 1, keySets will be generated.
+    if (state.indexer.length === 1) {
+        state.indexer = state.indexer[0];
+    }
+
+    out[out.length] = state.indexer;
+
+    // Clean state.
+    state.indexer = undefined;
+};
+
+
+},{"./../TokenTypes":11,"./../exceptions":12,"./quote":16,"./range":17,"./routed":18}],16:[function(require,module,exports){
+var TokenTypes = require('./../TokenTypes');
+var E = require('./../exceptions');
+var quoteE = E.quote;
+
+/**
+ * quote is all the parse tree in between quotes.  This includes the only
+ * escaping logic.
+ *
+ * parse-tree:
+ * <opening-quote>(.|(<escape><opening-quote>))*<opening-quote>
+ */
+module.exports = function quote(tokenizer, openingToken, state, out) {
+    var token = tokenizer.next();
+    var innerToken = '';
+    var openingQuote = openingToken.token;
+    var escaping = false;
+    var done = false;
+
+    while (!token.done) {
+
+        switch (token.type) {
+            case TokenTypes.token:
+            case TokenTypes.space:
+
+            case TokenTypes.dotSeparator:
+            case TokenTypes.commaSeparator:
+
+            case TokenTypes.openingBracket:
+            case TokenTypes.closingBracket:
+            case TokenTypes.openingBrace:
+            case TokenTypes.closingBrace:
+                if (escaping) {
+                    E.throwError(quoteE.illegalEscape, tokenizer);
+                }
+
+                innerToken += token.token;
+                break;
+
+
+            case TokenTypes.quote:
+                // the simple case.  We are escaping
+                if (escaping) {
+                    innerToken += token.token;
+                    escaping = false;
+                }
+
+                // its not a quote that is the opening quote
+                else if (token.token !== openingQuote) {
+                    innerToken += token.token;
+                }
+
+                // last thing left.  Its a quote that is the opening quote
+                // therefore we must produce the inner token of the indexer.
+                else {
+                    done = true;
+                }
+
+                break;
+            case TokenTypes.escape:
+                escaping = true;
+                break;
+
+            default:
+                E.throwError(E.unexpectedToken, tokenizer);
+        }
+
+        // If done, leave loop
+        if (done) {
+            break;
+        }
+
+        // Keep cycling through the tokenizer.
+        token = tokenizer.next();
+    }
+
+    if (innerToken.length === 0) {
+        E.throwError(quoteE.empty, tokenizer);
+    }
+
+    state.indexer[state.indexer.length] = innerToken;
+};
+
+
+},{"./../TokenTypes":11,"./../exceptions":12}],17:[function(require,module,exports){
+var Tokenizer = require('./../tokenizer');
+var TokenTypes = require('./../TokenTypes');
+var E = require('./../exceptions');
+
+/**
+ * The indexer is all the logic that happens in between
+ * the '[', opening bracket, and ']' closing bracket.
+ */
+module.exports = function range(tokenizer, openingToken, state, out) {
+    var token = tokenizer.peek();
+    var dotCount = 1;
+    var done = false;
+    var inclusive = true;
+
+    // Grab the last token off the stack.  Must be an integer.
+    var idx = state.indexer.length - 1;
+    var from = Tokenizer.toNumber(state.indexer[idx]);
+    var to;
+
+    if (isNaN(from)) {
+        E.throwError(E.range.precedingNaN, tokenizer);
+    }
+
+    // Why is number checking so difficult in javascript.
+
+    while (!done && !token.done) {
+
+        switch (token.type) {
+
+            // dotSeparators at the top level have no meaning
+            case TokenTypes.dotSeparator:
+                if (dotCount === 3) {
+                    E.throwError(E.unexpectedToken, tokenizer);
+                }
+                ++dotCount;
+
+                if (dotCount === 3) {
+                    inclusive = false;
+                }
+                break;
+
+            case TokenTypes.token:
+                // move the tokenizer forward and save to.
+                to = Tokenizer.toNumber(tokenizer.next().token);
+
+                // throw potential error.
+                if (isNaN(to)) {
+                    E.throwError(E.range.suceedingNaN, tokenizer);
+                }
+
+                done = true;
+                break;
+
+            default:
+                done = true;
+                break;
+        }
+
+        // Keep cycling through the tokenizer.  But ranges have to peek
+        // before they go to the next token since there is no 'terminating'
+        // character.
+        if (!done) {
+            tokenizer.next();
+
+            // go to the next token without consuming.
+            token = tokenizer.peek();
+        }
+
+        // break and remove state information.
+        else {
+            break;
+        }
+    }
+
+    state.indexer[idx] = {from: from, to: inclusive ? to : to - 1};
+};
+
+
+},{"./../TokenTypes":11,"./../exceptions":12,"./../tokenizer":19}],18:[function(require,module,exports){
+var TokenTypes = require('./../TokenTypes');
+var RoutedTokens = require('./../RoutedTokens');
+var E = require('./../exceptions');
+var routedE = E.routed;
+
+/**
+ * The routing logic.
+ *
+ * parse-tree:
+ * <opening-brace><routed-token>(:<token>)<closing-brace>
+ */
+module.exports = function routed(tokenizer, openingToken, state, out) {
+    var routeToken = tokenizer.next();
+    var named = false;
+    var name = '';
+
+    // ensure the routed token is a valid ident.
+    switch (routeToken.token) {
+        case RoutedTokens.integers:
+        case RoutedTokens.ranges:
+        case RoutedTokens.keys:
+            //valid
+            break;
+        default:
+            E.throwError(routedE.invalid, tokenizer);
+            break;
+    }
+
+    // Now its time for colon or ending brace.
+    var next = tokenizer.next();
+
+    // we are parsing a named identifier.
+    if (next.type === TokenTypes.colon) {
+        named = true;
+
+        // Get the token name.
+        next = tokenizer.next();
+        if (next.type !== TokenTypes.token) {
+            E.throwError(routedE.invalid, tokenizer);
+        }
+        name = next.token;
+
+        // move to the closing brace.
+        next = tokenizer.next();
+    }
+
+    // must close with a brace.
+
+    if (next.type === TokenTypes.closingBrace) {
+        var outputToken = {
+            type: routeToken.token,
+            named: named,
+            name: name
+        };
+        state.indexer[state.indexer.length] = outputToken;
+    }
+
+    // closing brace expected
+    else {
+        E.throwError(routedE.invalid, tokenizer);
+    }
+
+};
+
+
+},{"./../RoutedTokens":10,"./../TokenTypes":11,"./../exceptions":12}],19:[function(require,module,exports){
+var TokenTypes = require('./../TokenTypes');
+var DOT_SEPARATOR = '.';
+var COMMA_SEPARATOR = ',';
+var OPENING_BRACKET = '[';
+var CLOSING_BRACKET = ']';
+var OPENING_BRACE = '{';
+var CLOSING_BRACE = '}';
+var COLON = ':';
+var ESCAPE = '\\';
+var DOUBLE_OUOTES = '"';
+var SINGE_OUOTES = "'";
+var SPACE = " ";
+var SPECIAL_CHARACTERS = '\\\'"[]., ';
+var EXT_SPECIAL_CHARACTERS = '\\{}\'"[]., :';
+
+var Tokenizer = module.exports = function(string, ext) {
+    this._string = string;
+    this._idx = -1;
+    this._extended = ext;
+    this.parseString = '';
+};
+
+Tokenizer.prototype = {
+    /**
+     * grabs the next token either from the peek operation or generates the
+     * next token.
+     */
+    next: function() {
+        var nextToken = this._nextToken ?
+            this._nextToken : getNext(this._string, this._idx, this._extended);
+
+        this._idx = nextToken.idx;
+        this._nextToken = false;
+        this.parseString += nextToken.token.token;
+
+        return nextToken.token;
+    },
+
+    /**
+     * will peak but not increment the tokenizer
+     */
+    peek: function() {
+        var nextToken = this._nextToken ?
+            this._nextToken : getNext(this._string, this._idx, this._extended);
+        this._nextToken = nextToken;
+
+        return nextToken.token;
+    }
+};
+
+Tokenizer.toNumber = function toNumber(x) {
+    if (!isNaN(+x)) {
+        return +x;
+    }
+    return NaN;
+};
+
+function toOutput(token, type, done) {
+    return {
+        token: token,
+        done: done,
+        type: type
+    };
+}
+
+function getNext(string, idx, ext) {
+    var output = false;
+    var token = '';
+    var specialChars = ext ?
+        EXT_SPECIAL_CHARACTERS : SPECIAL_CHARACTERS;
+    var done;
+
+    do {
+
+        done = idx + 1 >= string.length;
+        if (done) {
+            break;
+        }
+
+        // we have to peek at the next token
+        var character = string[idx + 1];
+
+        if (character !== undefined &&
+            specialChars.indexOf(character) === -1) {
+
+            token += character;
+            ++idx;
+            continue;
+        }
+
+        // The token to delimiting character transition.
+        else if (token.length) {
+            break;
+        }
+
+        ++idx;
+        var type;
+        switch (character) {
+            case DOT_SEPARATOR:
+                type = TokenTypes.dotSeparator;
+                break;
+            case COMMA_SEPARATOR:
+                type = TokenTypes.commaSeparator;
+                break;
+            case OPENING_BRACKET:
+                type = TokenTypes.openingBracket;
+                break;
+            case CLOSING_BRACKET:
+                type = TokenTypes.closingBracket;
+                break;
+            case OPENING_BRACE:
+                type = TokenTypes.openingBrace;
+                break;
+            case CLOSING_BRACE:
+                type = TokenTypes.closingBrace;
+                break;
+            case SPACE:
+                type = TokenTypes.space;
+                break;
+            case DOUBLE_OUOTES:
+            case SINGE_OUOTES:
+                type = TokenTypes.quote;
+                break;
+            case ESCAPE:
+                type = TokenTypes.escape;
+                break;
+            case COLON:
+                type = TokenTypes.colon;
+                break;
+            default:
+                type = TokenTypes.unknown;
+                break;
+        }
+        output = toOutput(character, type, false);
+        break;
+    } while (!done);
+
+    if (!output && token.length) {
+        output = toOutput(token, TokenTypes.token, false);
+    }
+
+    if (!output) {
+        output = {done: true};
+    }
+
+    return {
+        token: output,
+        idx: idx
+    };
+}
+
+
+
+},{"./../TokenTypes":11}],20:[function(require,module,exports){
+var toPaths = require('./toPaths');
+var toTree = require('./toTree');
+
+module.exports = function collapse(paths) {
+    var collapseMap = paths.
+        reduce(function(acc, path) {
+            var len = path.length;
+            if (!acc[len]) {
+                acc[len] = [];
+            }
+            acc[len].push(path);
+            return acc;
+        }, {});
+
+    Object.
+        keys(collapseMap).
+        forEach(function(collapseKey) {
+            collapseMap[collapseKey] = toTree(collapseMap[collapseKey]);
+        });
+
+    return toPaths(collapseMap);
+};
+
+},{"./toPaths":26,"./toTree":27}],21:[function(require,module,exports){
+var iterateKeySet = require('./iterateKeySet');
+
+/**
+ * Tests to see if the intersection should be stripped from the
+ * total paths.  The only way this happens currently is if the entirety
+ * of the path is contained in the tree.
+ * @private
+ */
+module.exports = function hasIntersection(tree, path, depth) {
+    var current = tree;
+    var intersects = true;
+
+    // Continue iteratively going down a path until a complex key is
+    // encountered, then recurse.
+    for (;intersects && depth < path.length; ++depth) {
+        var key = path[depth];
+        var keyType = typeof key;
+
+        // We have to iterate key set
+        if (key && keyType === 'object') {
+            var note = {};
+            var innerKey = iterateKeySet(key, note);
+            var nextDepth = depth + 1;
+
+            // Loop through the innerKeys setting the intersects flag
+            // to each result.  Break out on false.
+            do {
+                var next = current[innerKey];
+                intersects = next !== undefined;
+
+                if (intersects) {
+                    intersects = hasIntersection(next, path, nextDepth);
+                }
+                innerKey = iterateKeySet(key, note);
+            } while (intersects && !note.done);
+
+            // Since we recursed, we shall not pass any further!
+            break;
+        }
+
+        // Its a simple key, just move forward with the testing.
+        current = current[key];
+        intersects = current !== undefined;
+    }
+
+    return intersects;
+};
+
+},{"./iterateKeySet":23}],22:[function(require,module,exports){
+module.exports = {
+    iterateKeySet: require('./iterateKeySet'),
+    toTree: require('./toTree'),
+    toTreeWithUnion: require('./toTreeWithUnion'),
+    pathsComplementFromTree: require('./pathsComplementFromTree'),
+    pathsComplementFromLengthTree: require('./pathsComplementFromLengthTree'),
+    hasIntersection: require('./hasIntersection'),
+    toPaths: require('./toPaths'),
+    collapse: require('./collapse')
+};
+
+},{"./collapse":20,"./hasIntersection":21,"./iterateKeySet":23,"./pathsComplementFromLengthTree":24,"./pathsComplementFromTree":25,"./toPaths":26,"./toTree":27,"./toTreeWithUnion":28}],23:[function(require,module,exports){
+var isArray = Array.isArray;
+
+/**
+ * Takes in a keySet and a note attempts to iterate over it.
+ * If the value is a primitive, the key will be returned and the note will
+ * be marked done
+ * If the value is an object, then each value of the range will be returned
+ * and when finished the note will be marked done.
+ * If the value is an array, each value will be iterated over, if any of the
+ * inner values are ranges, those will be iterated over.  When fully done,
+ * the note will be marked done.
+ *
+ * @param {Object|Array|String|Number} keySet -
+ * @param {Object} note - The non filled note
+ * @returns {String|Number|undefined} - The current iteration value.
+ * If undefined, then the keySet is empty
+ * @public
+ */
+module.exports = function iterateKeySet(keySet, note) {
+    if (note.isArray === undefined) {
+        initializeNote(keySet, note);
+    }
+
+    // Array iteration
+    if (note.isArray) {
+        var nextValue;
+
+        // Cycle through the array and pluck out the next value.
+        do {
+            if (note.loaded && note.rangeOffset > note.to) {
+                ++note.arrayOffset;
+                note.loaded = false;
+            }
+
+            var idx = note.arrayOffset, length = keySet.length;
+            if (idx >= length) {
+                note.done = true;
+                break;
+            }
+
+            var el = keySet[note.arrayOffset];
+            var type = typeof el;
+
+            // Inner range iteration.
+            if (type === 'object') {
+                if (!note.loaded) {
+                    initializeRange(el, note);
+                }
+
+                // Empty to/from
+                if (note.empty) {
+                    continue;
+                }
+
+                nextValue = note.rangeOffset++;
+            }
+
+            // Primitive iteration in array.
+            else {
+                ++note.arrayOffset;
+                nextValue = el;
+            }
+        } while (nextValue === undefined);
+
+        return nextValue;
+    }
+
+    // Range iteration
+    else if (note.isObject) {
+        if (!note.loaded) {
+            initializeRange(keySet, note);
+        }
+        if (note.rangeOffset > note.to) {
+            note.done = true;
+            return undefined;
+        }
+
+        return note.rangeOffset++;
+    }
+
+    // Primitive value
+    else {
+        note.done = true;
+        return keySet;
+    }
+};
+
+function initializeRange(key, memo) {
+    var from = memo.from = key.from || 0;
+    var to = memo.to = key.to ||
+        (typeof key.length === 'number' &&
+        memo.from + key.length - 1 || 0);
+    memo.rangeOffset = memo.from;
+    memo.loaded = true;
+    if (from > to) {
+        memo.empty = true;
+    }
+}
+
+function initializeNote(key, note) {
+    note.done = false;
+    var isObject = note.isObject = !!(key && typeof key === 'object');
+    note.isArray = isObject && isArray(key);
+    note.arrayOffset = 0;
+}
+
+},{}],24:[function(require,module,exports){
+var hasIntersection = require('./hasIntersection');
+
+/**
+ * Compares the paths passed in with the tree.  Any of the paths that are in
+ * the tree will be stripped from the paths.
+ *
+ * **Does not mutate** the incoming paths object.
+ * **Proper subset** only matching.
+ *
+ * @param {Array} paths - A list of paths (complex or simple) to strip the
+ * intersection
+ * @param {Object} tree -
+ * @public
+ */
+module.exports = function pathsComplementFromLengthTree(paths, tree) {
+    var out = [];
+    var outLength = -1;
+
+    for (var i = 0, len = paths.length; i < len; ++i) {
+        // If this does not intersect then add it to the output.
+        var path = paths[i];
+        if (!hasIntersection(tree[path.length], path, 0)) {
+            out[++outLength] = path;
+        }
+    }
+    return out;
+};
+
+
+},{"./hasIntersection":21}],25:[function(require,module,exports){
+var hasIntersection = require('./hasIntersection');
+
+/**
+ * Compares the paths passed in with the tree.  Any of the paths that are in
+ * the tree will be stripped from the paths.
+ *
+ * **Does not mutate** the incoming paths object.
+ * **Proper subset** only matching.
+ *
+ * @param {Array} paths - A list of paths (complex or simple) to strip the
+ * intersection
+ * @param {Object} tree -
+ * @public
+ */
+module.exports = function pathsComplementFromTree(paths, tree) {
+    var out = [];
+    var outLength = -1;
+
+    for (var i = 0, len = paths.length; i < len; ++i) {
+        // If this does not intersect then add it to the output.
+        if (!hasIntersection(tree, paths[i], 0)) {
+            out[++outLength] = paths[i];
+        }
+    }
+    return out;
+};
+
+
+},{"./hasIntersection":21}],26:[function(require,module,exports){
+var isArray = Array.isArray;
+var typeOfObject = "object";
+
+/* jshint forin: false */
+module.exports = function toPaths(lengths) {
+    var pathmap;
+    var allPaths = [];
+    var allPathsLength = 0;
+    for (var length in lengths) {
+        if (isNumber(length) && isObject(pathmap = lengths[length])) {
+            var paths = collapsePathMap(pathmap, 0, parseInt(length, 10)).sets;
+            var pathsIndex = -1;
+            var pathsCount = paths.length;
+            while (++pathsIndex < pathsCount) {
+                allPaths[allPathsLength++] = collapsePathSetIndexes(paths[pathsIndex]);
+            }
+        }
+    }
+    return allPaths;
+};
+
+function isObject(value) {
+    return value !== null && typeof value === typeOfObject;
+}
+
+function collapsePathMap(pathmap, depth, length) {
+
+    var key;
+    var code = getHashCode(String(depth));
+    var subs = Object.create(null);
+
+    var codes = [];
+    var codesIndex = -1;
+    var codesCount = 0;
+
+    var pathsets = [];
+    var pathsetsCount = 0;
+
+    var subPath, subCode,
+        subKeys, subKeysIndex, subKeysCount,
+        subSets, subSetsIndex, subSetsCount,
+        pathset, pathsetIndex, pathsetCount,
+        firstSubKey, pathsetClone;
+
+    subKeys = [];
+    subKeysIndex = -1;
+
+    if (depth < length - 1) {
+
+        subKeysCount = getSortedKeys(pathmap, subKeys);
+
+        while (++subKeysIndex < subKeysCount) {
+            key = subKeys[subKeysIndex];
+            subPath = collapsePathMap(pathmap[key], depth + 1, length);
+            subCode = subPath.code;
+            if(subs[subCode]) {
+                subPath = subs[subCode];
+            } else {
+                codes[codesCount++] = subCode;
+                subPath = subs[subCode] = {
+                    keys: [],
+                    sets: subPath.sets
+                };
+            }
+            code = getHashCode(code + key + subCode);
+
+            isNumber(key) &&
+                subPath.keys.push(parseInt(key, 10)) ||
+                subPath.keys.push(key);
+        }
+
+        while(++codesIndex < codesCount) {
+
+            key = codes[codesIndex];
+            subPath = subs[key];
+            subKeys = subPath.keys;
+            subKeysCount = subKeys.length;
+
+            if (subKeysCount > 0) {
+
+                subSets = subPath.sets;
+                subSetsIndex = -1;
+                subSetsCount = subSets.length;
+                firstSubKey = subKeys[0];
+
+                while (++subSetsIndex < subSetsCount) {
+
+                    pathset = subSets[subSetsIndex];
+                    pathsetIndex = -1;
+                    pathsetCount = pathset.length;
+                    pathsetClone = new Array(pathsetCount + 1);
+                    pathsetClone[0] = subKeysCount > 1 && subKeys || firstSubKey;
+
+                    while (++pathsetIndex < pathsetCount) {
+                        pathsetClone[pathsetIndex + 1] = pathset[pathsetIndex];
+                    }
+
+                    pathsets[pathsetsCount++] = pathsetClone;
+                }
+            }
+        }
+    } else {
+        subKeysCount = getSortedKeys(pathmap, subKeys);
+        if (subKeysCount > 1) {
+            pathsets[pathsetsCount++] = [subKeys];
+        } else {
+            pathsets[pathsetsCount++] = subKeys;
+        }
+        while (++subKeysIndex < subKeysCount) {
+            code = getHashCode(code + subKeys[subKeysIndex]);
+        }
+    }
+
+    return {
+        code: code,
+        sets: pathsets
+    };
+}
+
+function collapsePathSetIndexes(pathset) {
+
+    var keysetIndex = -1;
+    var keysetCount = pathset.length;
+
+    while (++keysetIndex < keysetCount) {
+        var keyset = pathset[keysetIndex];
+        if (isArray(keyset)) {
+            pathset[keysetIndex] = collapseIndex(keyset);
+        }
+    }
+
+    return pathset;
+}
+
+/**
+ * Collapse range indexers, e.g. when there is a continuous
+ * range in an array, turn it into an object instead:
+ *
+ * [1,2,3,4,5,6] => {"from":1, "to":6}
+ *
+ * @private
+ */
+function collapseIndex(keyset) {
+
+    // Do we need to dedupe an indexer keyset if they're duplicate consecutive integers?
+    // var hash = {};
+    var keyIndex = -1;
+    var keyCount = keyset.length - 1;
+    var isSparseRange = keyCount > 0;
+
+    while (++keyIndex <= keyCount) {
+
+        var key = keyset[keyIndex];
+
+        if (!isNumber(key) /* || hash[key] === true*/ ) {
+            isSparseRange = false;
+            break;
+        }
+        // hash[key] = true;
+        // Cast number indexes to integers.
+        keyset[keyIndex] = parseInt(key, 10);
+    }
+
+    if (isSparseRange === true) {
+
+        keyset.sort(sortListAscending);
+
+        var from = keyset[0];
+        var to = keyset[keyCount];
+
+        // If we re-introduce deduped integer indexers, change this comparson to "===".
+        if (to - from <= keyCount) {
+            return {
+                from: from,
+                to: to
+            };
+        }
+    }
+
+    return keyset;
+}
+
+function sortListAscending(a, b) {
+    return a - b;
+}
+
+/* jshint forin: false */
+function getSortedKeys(map, keys, sort) {
+    var len = 0;
+    for (var key in map) {
+        keys[len++] = key;
+    }
+    if (len > 1) {
+        keys.sort(sort);
+    }
+    return len;
+}
+
+function getHashCode(key) {
+    var code = 5381;
+    var index = -1;
+    var count = key.length;
+    while (++index < count) {
+        code = (code << 5) + code + key.charCodeAt(index);
+    }
+    return String(code);
+}
+
+/**
+ * Return true if argument is a number or can be cast to a number
+ * @private
+ */
+function isNumber(val) {
+    // parseFloat NaNs numeric-cast false positives (null|true|false|"")
+    // ...but misinterprets leading-number strings, particularly hex literals ("0x...")
+    // subtraction forces infinities to NaN
+    // adding 1 corrects loss of precision from parseFloat (#15100)
+    return !isArray(val) && (val - parseFloat(val) + 1) >= 0;
+}
+
+
+},{}],27:[function(require,module,exports){
+var iterateKeySet = require('./../lib/iterateKeySet');
+var isArray = Array.isArray;
+
+/**
+ * @param {Array} paths -
+ * @returns {Object} -
+ */
+module.exports = function toTree(paths) {
+    return paths.reduce(function(acc, path) {
+        innerToTree(acc, path, 0);
+        return acc;
+    }, {});
+};
+
+function innerToTree(seed, path, depth) {
+
+    var keySet = path[depth];
+    var iteratorNote = {};
+    var key;
+    var nextDepth = depth + 1;
+
+    key = iterateKeySet(keySet, iteratorNote);
+
+    do {
+
+        var next = seed[key];
+        if (!next) {
+            if (nextDepth === path.length) {
+                seed[key] = null;
+            } else {
+                next = seed[key] = {};
+            }
+        }
+
+        if (nextDepth < path.length) {
+            innerToTree(next, path, nextDepth);
+        }
+
+        if (!iteratorNote.done) {
+            key = iterateKeySet(keySet, iteratorNote);
+        }
+    } while (!iteratorNote.done);
+}
+
+
+},{"./../lib/iterateKeySet":23}],28:[function(require,module,exports){
+
+},{}],29:[function(require,module,exports){
 var ModelRoot = require("./ModelRoot");
 var ModelDataSourceAdapter = require("./ModelDataSourceAdapter");
 
@@ -1111,7 +2654,7 @@ Model.prototype._setCache = require("./set/setPathMaps");
 Model.prototype._invalidatePathValues = require("./invalidate/invalidatePathSets");
 Model.prototype._invalidatePathMaps = require("./invalidate/invalidatePathMaps");
 
-},{"./ModelDataSourceAdapter":8,"./ModelRoot":9,"./deref":11,"./deref/hasValidParentReference":10,"./deref/sync":12,"./get":27,"./get/getBoundValue":21,"./get/getCache":22,"./get/getValue":24,"./get/getValueSync":25,"./get/getVersion":26,"./get/sync":32,"./invalidate/invalidatePathMaps":41,"./invalidate/invalidatePathSets":42,"./lru/collect":43,"./request/RequestQueueV2":47,"./response/CallResponse":53,"./response/InvalidateResponse":54,"./response/ModelResponse":55,"./response/get":60,"./response/get/getWithPaths":59,"./response/get/validInput":61,"./response/set":63,"./schedulers/ASAPScheduler":67,"./schedulers/ImmediateScheduler":68,"./schedulers/TimeoutScheduler":69,"./set/setJSONGraphs":70,"./set/setPathMaps":71,"./set/setPathValues":72,"./set/setValue":73,"./set/sync":74,"./support/array-clone":75,"./support/array-slice":78,"./support/getSize":83,"./support/isJSONEnvelope":93,"./support/isJSONGraphEnvelope":94,"./support/isObject":95,"./support/isPrimitive":97,"./support/validateInput":111,"falcor-json-graph":120,"falcor-path-syntax":124}],8:[function(require,module,exports){
+},{"./ModelDataSourceAdapter":30,"./ModelRoot":31,"./deref":33,"./deref/hasValidParentReference":32,"./deref/sync":34,"./get":49,"./get/getBoundValue":43,"./get/getCache":44,"./get/getValue":46,"./get/getValueSync":47,"./get/getVersion":48,"./get/sync":54,"./invalidate/invalidatePathMaps":63,"./invalidate/invalidatePathSets":64,"./lru/collect":65,"./request/RequestQueueV2":69,"./response/CallResponse":75,"./response/InvalidateResponse":76,"./response/ModelResponse":77,"./response/get":82,"./response/get/getWithPaths":81,"./response/get/validInput":83,"./response/set":85,"./schedulers/ASAPScheduler":89,"./schedulers/ImmediateScheduler":90,"./schedulers/TimeoutScheduler":91,"./set/setJSONGraphs":92,"./set/setPathMaps":93,"./set/setPathValues":94,"./set/setValue":95,"./set/sync":96,"./support/array-clone":97,"./support/array-slice":100,"./support/getSize":105,"./support/isJSONEnvelope":115,"./support/isJSONGraphEnvelope":116,"./support/isObject":117,"./support/isPrimitive":119,"./support/validateInput":133,"falcor-json-graph":9,"falcor-path-syntax":13}],30:[function(require,module,exports){
 function ModelDataSourceAdapter(model) {
     this._model = model._materialize().boxValues().treatErrorsAsValues();
 }
@@ -1131,7 +2674,7 @@ ModelDataSourceAdapter.prototype.call = function call(path, args, suffixes, path
 
 module.exports = ModelDataSourceAdapter;
 
-},{}],9:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 var isFunction = require("./support/isFunction");
 var hasOwn = require("./support/hasOwn");
 var ImmediateScheduler = require("./schedulers/ImmediateScheduler");
@@ -1174,7 +2717,7 @@ ModelRoot.prototype.comparator = function comparator(cacheNode, messageNode) {
 
 module.exports = ModelRoot;
 
-},{"./schedulers/ImmediateScheduler":68,"./support/hasOwn":86,"./support/isFunction":91}],10:[function(require,module,exports){
+},{"./schedulers/ImmediateScheduler":90,"./support/hasOwn":108,"./support/isFunction":113}],32:[function(require,module,exports){
 module.exports = function fromWhenceYeCame() {
     var reference = this._referenceContainer;
 
@@ -1207,7 +2750,7 @@ module.exports = function fromWhenceYeCame() {
     return true;
 };
 
-},{}],11:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 var InvalidDerefInputError = require("./../errors/InvalidDerefInputError");
 var getCachePosition = require("./../get/getCachePosition");
 var CONTAINER_DOES_NOT_EXIST = "e";
@@ -1269,7 +2812,7 @@ module.exports = function deref(boundJSONArg) {
     throw new InvalidDerefInputError();
 };
 
-},{"./../errors/InvalidDerefInputError":14,"./../get/getCachePosition":23,"./../types/ref":115}],12:[function(require,module,exports){
+},{"./../errors/InvalidDerefInputError":36,"./../get/getCachePosition":45,"./../types/ref":137}],34:[function(require,module,exports){
 var pathSyntax = require("falcor-path-syntax");
 var getBoundValue = require("./../get/getBoundValue");
 var InvalidModelError = require("./../errors/InvalidModelError");
@@ -1301,7 +2844,7 @@ module.exports = function derefSync(boundPathArg) {
     return this._clone({ _path: path });
 };
 
-},{"./../errors/InvalidModelError":15,"./../get/getBoundValue":21,"falcor-path-syntax":124}],13:[function(require,module,exports){
+},{"./../errors/InvalidModelError":37,"./../get/getBoundValue":43,"falcor-path-syntax":13}],35:[function(require,module,exports){
 /**
  * When a bound model attempts to retrieve JSONGraph it should throw an
  * error.
@@ -1323,7 +2866,7 @@ BoundJSONGraphModelError.message =
 
 module.exports = BoundJSONGraphModelError;
 
-},{}],14:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var NAME = "InvalidDerefInputError";
 var MESSAGE = "Deref can only be used with a non-primitive object from get, set, or call.";
 /**
@@ -1346,7 +2889,7 @@ InvalidDerefInputError.message = MESSAGE;
 
 module.exports = InvalidDerefInputError;
 
-},{}],15:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 var NAME = "InvalidModelError";
 var MESSAGE = "The boundPath of the model is not valid since a value or error was found before the path end.";
 /**
@@ -1370,7 +2913,7 @@ InvalidModelError.message = MESSAGE;
 
 module.exports = InvalidModelError;
 
-},{}],16:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 var NAME = "InvalidSourceError";
 /**
  * InvalidSourceError happens when a dataSource syncronously throws
@@ -1395,7 +2938,7 @@ InvalidSourceError.is = function(e) {
 
 module.exports = InvalidSourceError;
 
-},{}],17:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 var NAME = "MaxRetryExceededError";
 /**
  * A request can only be retried up to a specified limit.  Once that
@@ -1418,7 +2961,7 @@ MaxRetryExceededError.is = function(e) {
 
 module.exports = MaxRetryExceededError;
 
-},{}],18:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 var NAME = "NullInPathError";
 var MESSAGE = "`null` is not allowed in branch key positions.";
 
@@ -1437,7 +2980,7 @@ NullInPathError.message = MESSAGE;
 
 module.exports = NullInPathError;
 
-},{}],19:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 var createHardlink = require("./../support/createHardlink");
 var onValue = require("./../get/onValue");
 var isExpired = require("./../get/util/isExpired");
@@ -1530,7 +3073,7 @@ function followReference(model, root, nodeArg, referenceContainerArg,
 
 module.exports = followReference;
 
-},{"./../get/onValue":30,"./../get/util/isExpired":34,"./../lru/promote":44,"./../support/createHardlink":80,"./../types/ref":115}],20:[function(require,module,exports){
+},{"./../get/onValue":52,"./../get/util/isExpired":56,"./../lru/promote":66,"./../support/createHardlink":102,"./../types/ref":137}],42:[function(require,module,exports){
 var getCachePosition = require("./../get/getCachePosition");
 var InvalidModelError = require("./../errors/InvalidModelError");
 var BoundJSONGraphModelError = require("./../errors/BoundJSONGraphModelError");
@@ -1596,7 +3139,7 @@ module.exports = function get(walk, isJSONG) {
     };
 };
 
-},{"./../errors/BoundJSONGraphModelError":13,"./../errors/InvalidModelError":15,"./../get/getCachePosition":23}],21:[function(require,module,exports){
+},{"./../errors/BoundJSONGraphModelError":35,"./../errors/InvalidModelError":37,"./../get/getCachePosition":45}],43:[function(require,module,exports){
 var getValueSync = require("./../get/getValueSync");
 var InvalidModelError = require("./../errors/InvalidModelError");
 
@@ -1642,7 +3185,7 @@ module.exports = function getBoundValue(model, pathArg, materialized) {
     };
 };
 
-},{"./../errors/InvalidModelError":15,"./../get/getValueSync":25}],22:[function(require,module,exports){
+},{"./../errors/InvalidModelError":37,"./../get/getValueSync":47}],44:[function(require,module,exports){
 var isInternalKey = require("./../support/isInternalKey");
 
 /**
@@ -1715,7 +3258,7 @@ function _copyCache(node, out, fromKey) {
         });
 }
 
-},{"./../support/isInternalKey":92}],23:[function(require,module,exports){
+},{"./../support/isInternalKey":114}],45:[function(require,module,exports){
 /**
  * getCachePosition makes a fast walk to the bound value since all bound
  * paths are the most possible optimized path.
@@ -1741,7 +3284,7 @@ module.exports = function getCachePosition(model, path) {
     return currentCachePosition;
 };
 
-},{}],24:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 var ModelResponse = require("./../response/ModelResponse");
 var pathSyntax = require("falcor-path-syntax");
 
@@ -1778,7 +3321,7 @@ module.exports = function getValue(path) {
     });
 };
 
-},{"./../response/ModelResponse":55,"falcor-path-syntax":124}],25:[function(require,module,exports){
+},{"./../response/ModelResponse":77,"falcor-path-syntax":13}],47:[function(require,module,exports){
 var followReference = require("./../get/followReference");
 var clone = require("./../get/util/clone");
 var isExpired = require("./../get/util/isExpired");
@@ -1916,7 +3459,7 @@ module.exports = function getValueSync(model, simplePath, noClone) {
     };
 };
 
-},{"./../get/followReference":19,"./../get/util/clone":33,"./../get/util/isExpired":34,"./../lru/promote":44,"./../types/atom":113,"./../types/error":114,"./../types/ref":115}],26:[function(require,module,exports){
+},{"./../get/followReference":41,"./../get/util/clone":55,"./../get/util/isExpired":56,"./../lru/promote":66,"./../types/atom":135,"./../types/error":136,"./../types/ref":137}],48:[function(require,module,exports){
 module.exports = function _getVersion(model, path) {
     // ultra fast clone for boxed values.
     var gen = model._getValueSync({
@@ -1928,7 +3471,7 @@ module.exports = function _getVersion(model, path) {
     return (version == null) ? -1 : version;
 };
 
-},{}],27:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 var get = require("./get");
 var walkPath = require("./walkPath");
 
@@ -1942,7 +3485,7 @@ module.exports = {
     getWithPathsAsJSONGraph: getWithPathsAsJSONGraph
 };
 
-},{"./../get/getBoundValue":21,"./../get/getValueSync":25,"./get":20,"./walkPath":37}],28:[function(require,module,exports){
+},{"./../get/getBoundValue":43,"./../get/getValueSync":47,"./get":42,"./walkPath":59}],50:[function(require,module,exports){
 var promote = require("./../lru/promote");
 var clone = require("./../get/util/clone");
 
@@ -1963,7 +3506,7 @@ module.exports = function onError(model, node, depth,
     promote(model._root, node);
 };
 
-},{"./../get/util/clone":33,"./../lru/promote":44}],29:[function(require,module,exports){
+},{"./../get/util/clone":55,"./../lru/promote":66}],51:[function(require,module,exports){
 var support = require("./util/support");
 var fastCopy = support.fastCopy;
 
@@ -1999,7 +3542,7 @@ function concatAndInsertMissing(model, remainingPath, depth, requestedPath,
         optimizedPath.slice(0, optimizedLength).concat(remainingPath));
 }
 
-},{"./util/support":36}],30:[function(require,module,exports){
+},{"./util/support":58}],52:[function(require,module,exports){
 var promote = require("./../lru/promote");
 var clone = require("./util/clone");
 var $ref = require("./../types/ref");
@@ -2123,7 +3666,7 @@ module.exports = function onValue(model, node, seed, depth, outerResults,
     }
 };
 
-},{"./../lru/promote":44,"./../types/atom":113,"./../types/error":114,"./../types/ref":115,"./util/clone":33}],31:[function(require,module,exports){
+},{"./../lru/promote":66,"./../types/atom":135,"./../types/error":136,"./../types/ref":137,"./util/clone":55}],53:[function(require,module,exports){
 var isExpired = require("./util/isExpired");
 var $error = require("./../types/error");
 var onError = require("./onError");
@@ -2200,7 +3743,7 @@ module.exports = function onValueType(
 };
 
 
-},{"./../support/expireNode":81,"./../types/error":114,"./onError":28,"./onMissing":29,"./onValue":30,"./util/isExpired":34,"./util/isMaterialzed":35}],32:[function(require,module,exports){
+},{"./../support/expireNode":103,"./../types/error":136,"./onError":50,"./onMissing":51,"./onValue":52,"./util/isExpired":56,"./util/isMaterialzed":57}],54:[function(require,module,exports){
 var pathSyntax = require("falcor-path-syntax");
 
 module.exports = function getValueSync(pathArg) {
@@ -2214,7 +3757,7 @@ module.exports = function getValueSync(pathArg) {
     return this._syncCheck("getValueSync") && this._getValueSync(this, path).value;
 };
 
-},{"falcor-path-syntax":124}],33:[function(require,module,exports){
+},{"falcor-path-syntax":13}],55:[function(require,module,exports){
 // Copies the node
 var unicodePrefix = require("./../../internal/unicodePrefix");
 
@@ -2234,19 +3777,19 @@ module.exports = function clone(node) {
 };
 
 
-},{"./../../internal/unicodePrefix":40}],34:[function(require,module,exports){
+},{"./../../internal/unicodePrefix":62}],56:[function(require,module,exports){
 var now = require("./../../support/now");
 module.exports = function isExpired(node) {
     var $expires = node.$expires === void 0 && -1 || node.$expires;
     return $expires !== -1 && $expires !== 1 && ($expires === 0 || $expires < now());
 };
 
-},{"./../../support/now":101}],35:[function(require,module,exports){
+},{"./../../support/now":123}],57:[function(require,module,exports){
 module.exports = function isMaterialized(model) {
     return model._materialized && !model._source;
 };
 
-},{}],36:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 function fastCopy(arr, iArg) {
     var a = [], len, j, i;
     for (j = 0, i = iArg || 0, len = arr.length; i < len; j++, i++) {
@@ -2274,7 +3817,7 @@ module.exports = {
     fastCopy: fastCopy
 };
 
-},{}],37:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 var followReference = require("./followReference");
 var onValueType = require("./onValueType");
 var onValue = require("./onValue");
@@ -2429,7 +3972,7 @@ module.exports = function walkPath(model, root, curr, path, depth, seed,
     } while (iteratorNote && !iteratorNote.done);
 };
 
-},{"./../errors/NullInPathError":18,"./../lru/promote":44,"./../types/ref":115,"./followReference":19,"./onValue":30,"./onValueType":31,"./util/isExpired":34,"falcor-path-utils":133}],38:[function(require,module,exports){
+},{"./../errors/NullInPathError":40,"./../lru/promote":66,"./../types/ref":137,"./followReference":41,"./onValue":52,"./onValueType":53,"./util/isExpired":56,"falcor-path-utils":22}],60:[function(require,module,exports){
 "use strict";
 
 function falcor(opts) {
@@ -2468,14 +4011,14 @@ module.exports = falcor;
 
 falcor.Model = require("./Model");
 
-},{"./Model":7,"promise":140}],39:[function(require,module,exports){
+},{"./Model":29,"promise":140}],61:[function(require,module,exports){
 module.exports = require("./unicodePrefix") + "ref";
 
-},{"./unicodePrefix":40}],40:[function(require,module,exports){
+},{"./unicodePrefix":62}],62:[function(require,module,exports){
 module.exports = "ツ";
 
 
-},{}],41:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 var createHardlink = require("../support/createHardlink");
 var __prefix = require("./../internal/unicodePrefix");
 
@@ -2655,7 +4198,7 @@ function invalidateNode(
     return [node, parent];
 }
 
-},{"../support/createHardlink":80,"./../get/getBoundValue":21,"./../internal/unicodePrefix":40,"./../lru/promote":44,"./../support/expireNode":81,"./../support/getSize":83,"./../support/hasOwn":86,"./../support/incrementVersion":87,"./../support/isExpired":90,"./../support/isFunction":91,"./../support/isObject":95,"./../support/isPrimitive":97,"./../support/removeNodeAndDescendants":104,"./../support/updateNodeAncestors":110,"./../types/ref":115}],42:[function(require,module,exports){
+},{"../support/createHardlink":102,"./../get/getBoundValue":43,"./../internal/unicodePrefix":62,"./../lru/promote":66,"./../support/expireNode":103,"./../support/getSize":105,"./../support/hasOwn":108,"./../support/incrementVersion":109,"./../support/isExpired":112,"./../support/isFunction":113,"./../support/isObject":117,"./../support/isPrimitive":119,"./../support/removeNodeAndDescendants":126,"./../support/updateNodeAncestors":132,"./../types/ref":137}],64:[function(require,module,exports){
 var __ref = require("./../internal/ref");
 
 var $ref = require("./../types/ref");
@@ -2835,7 +4378,7 @@ function invalidateNode(
     return [node, parent];
 }
 
-},{"./../get/getBoundValue":21,"./../internal/ref":39,"./../lru/promote":44,"./../support/expireNode":81,"./../support/getSize":83,"./../support/incrementVersion":87,"./../support/isExpired":90,"./../support/isFunction":91,"./../support/isPrimitive":97,"./../support/removeNodeAndDescendants":104,"./../support/updateNodeAncestors":110,"./../types/ref":115,"falcor-path-utils":133}],43:[function(require,module,exports){
+},{"./../get/getBoundValue":43,"./../internal/ref":61,"./../lru/promote":66,"./../support/expireNode":103,"./../support/getSize":105,"./../support/incrementVersion":109,"./../support/isExpired":112,"./../support/isFunction":113,"./../support/isPrimitive":119,"./../support/removeNodeAndDescendants":126,"./../support/updateNodeAncestors":132,"./../types/ref":137,"falcor-path-utils":22}],65:[function(require,module,exports){
 var removeNode = require("./../support/removeNode");
 var updateNodeAncestors = require("./../support/updateNodeAncestors");
 
@@ -2887,7 +4430,7 @@ module.exports = function collect(lru, expired, totalArg, max, ratioArg, version
     }
 };
 
-},{"./../support/removeNode":103,"./../support/updateNodeAncestors":110}],44:[function(require,module,exports){
+},{"./../support/removeNode":125,"./../support/updateNodeAncestors":132}],66:[function(require,module,exports){
 var EXPIRES_NEVER = require("./../values/expires-never");
 
 // [H] -> Next -> ... -> [T]
@@ -2933,7 +4476,7 @@ module.exports = function lruPromote(root, object) {
     }
 };
 
-},{"./../values/expires-never":116}],45:[function(require,module,exports){
+},{"./../values/expires-never":138}],67:[function(require,module,exports){
 module.exports = function lruSplice(root, object) {
 
     // Its in the cache.  Splice out.
@@ -2955,7 +4498,7 @@ module.exports = function lruSplice(root, object) {
     }
 };
 
-},{}],46:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 var complement = require("./complement");
 var flushGetRequest = require("./flushGetRequest");
 var REQUEST_ID = 0;
@@ -3207,7 +4750,7 @@ function flattenRequestedPaths(requested) {
 
 module.exports = GetRequestV2;
 
-},{"./../errors/InvalidSourceError":16,"./../set/setJSONGraphs":70,"./../set/setPathValues":72,"./../types/error":114,"./RequestTypes":48,"./complement":49,"./flushGetRequest":50}],47:[function(require,module,exports){
+},{"./../errors/InvalidSourceError":38,"./../set/setJSONGraphs":92,"./../set/setPathValues":94,"./../types/error":136,"./RequestTypes":70,"./complement":71,"./flushGetRequest":72}],69:[function(require,module,exports){
 var RequestTypes = require("./RequestTypes");
 var sendSetRequest = require("./sendSetRequest");
 var GetRequest = require("./GetRequestV2");
@@ -3360,12 +4903,12 @@ RequestQueueV2.prototype = {
 
 module.exports = RequestQueueV2;
 
-},{"./GetRequestV2":46,"./RequestTypes":48,"./sendSetRequest":51,"falcor-path-utils":133}],48:[function(require,module,exports){
+},{"./GetRequestV2":68,"./RequestTypes":70,"./sendSetRequest":73,"falcor-path-utils":22}],70:[function(require,module,exports){
 module.exports = {
     GetRequest: "GET"
 };
 
-},{}],49:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 var hasIntersection = require("falcor-path-utils").hasIntersection;
 var arraySlice = require("./../support/array-slice");
 
@@ -3417,7 +4960,7 @@ module.exports = function complement(requested, optimized, tree) {
     return [requestedIntersection, optimizedComplement, requestedComplement ];
 };
 
-},{"./../support/array-slice":78,"falcor-path-utils":133}],50:[function(require,module,exports){
+},{"./../support/array-slice":100,"falcor-path-utils":22}],72:[function(require,module,exports){
 var pathUtils = require("falcor-path-utils");
 var toTree = pathUtils.toTree;
 var toPaths = pathUtils.toPaths;
@@ -3510,7 +5053,7 @@ module.exports = function flushGetRequest(request, listOfPaths, callback) {
 };
 
 
-},{"./../errors/InvalidSourceError":16,"falcor-path-utils":133}],51:[function(require,module,exports){
+},{"./../errors/InvalidSourceError":38,"falcor-path-utils":22}],73:[function(require,module,exports){
 var arrayMap = require("./../support/array-map");
 var setJSONGraphs = require("./../set/setJSONGraphs");
 var setPathValues = require("./../set/setPathValues");
@@ -3593,7 +5136,7 @@ var sendSetRequest = function(originalJsonGraph, model, callback) {
 
 module.exports = sendSetRequest;
 
-},{"./../errors/InvalidSourceError":16,"./../set/setJSONGraphs":70,"./../set/setPathValues":72,"./../support/array-map":77}],52:[function(require,module,exports){
+},{"./../errors/InvalidSourceError":38,"./../set/setJSONGraphs":92,"./../set/setPathValues":94,"./../support/array-map":99}],74:[function(require,module,exports){
 /**
  * Will allow for state tracking of the current disposable.  Also fulfills the
  * disposable interface.
@@ -3633,7 +5176,7 @@ AssignableDisposable.prototype = {
 
 module.exports = AssignableDisposable;
 
-},{}],53:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 var ModelResponse = require("./../response/ModelResponse");
 var InvalidSourceError = require("./../errors/InvalidSourceError");
 
@@ -3716,7 +5259,7 @@ CallResponse.prototype._subscribe = function _subscribe(observer) {
 
 module.exports = CallResponse;
 
-},{"./../errors/InvalidSourceError":16,"./../response/ModelResponse":55,"falcor-path-syntax":124}],54:[function(require,module,exports){
+},{"./../errors/InvalidSourceError":38,"./../response/ModelResponse":77,"falcor-path-syntax":13}],76:[function(require,module,exports){
 var isArray = Array.isArray;
 var ModelResponse = require("./ModelResponse");
 var isPathValue = require("./../support/isPathValue");
@@ -3787,7 +5330,7 @@ InvalidateResponse.prototype._subscribe = function _subscribe(observer) {
 
 module.exports = InvalidateResponse;
 
-},{"./../support/isJSONEnvelope":93,"./../support/isPathValue":96,"./ModelResponse":55}],55:[function(require,module,exports){
+},{"./../support/isJSONEnvelope":115,"./../support/isPathValue":118,"./ModelResponse":77}],77:[function(require,module,exports){
 var falcor = require("./../");
 var noop = require("./../support/noop");
 
@@ -3915,7 +5458,7 @@ ModelResponse.prototype.then = function then(onNext, onError) {
 
 module.exports = ModelResponse;
 
-},{"./../":38,"./../support/noop":100}],56:[function(require,module,exports){
+},{"./../":60,"./../support/noop":122}],78:[function(require,module,exports){
 var ModelResponse = require("./../ModelResponse");
 var checkCacheAndReport = require("./checkCacheAndReport");
 var getRequestCycle = require("./getRequestCycle");
@@ -3998,7 +5541,7 @@ GetResponse.prototype._subscribe = function _subscribe(observer) {
                            observer, seed, errors, 1);
 };
 
-},{"./../../lru/collect":43,"./../../support/getSize":83,"./../ModelResponse":55,"./checkCacheAndReport":57,"./getRequestCycle":58}],57:[function(require,module,exports){
+},{"./../../lru/collect":65,"./../../support/getSize":105,"./../ModelResponse":77,"./checkCacheAndReport":79,"./getRequestCycle":80}],79:[function(require,module,exports){
 var gets = require("./../../get");
 var getWithPathsAsJSONGraph = gets.getWithPathsAsJSONGraph;
 var getWithPathsAsPathMap = gets.getWithPathsAsPathMap;
@@ -4082,7 +5625,7 @@ module.exports = function checkCacheAndReport(model, requestedPaths, observer,
     return results;
 };
 
-},{"./../../get":27}],58:[function(require,module,exports){
+},{"./../../get":49}],80:[function(require,module,exports){
 var checkCacheAndReport = require("./checkCacheAndReport");
 var MaxRetryExceededError = require("./../../errors/MaxRetryExceededError");
 var fastCat = require("./../../get/util/support").fastCat;
@@ -4176,7 +5719,7 @@ module.exports = function getRequestCycle(getResponse, model, results, observer,
     return disposable;
 };
 
-},{"../../errors/InvalidSourceError":16,"./../../errors/MaxRetryExceededError":17,"./../../get/util/support":36,"./../../lru/collect":43,"./../../support/getSize":83,"./../AssignableDisposable":52,"./checkCacheAndReport":57}],59:[function(require,module,exports){
+},{"../../errors/InvalidSourceError":38,"./../../errors/MaxRetryExceededError":39,"./../../get/util/support":58,"./../../lru/collect":65,"./../../support/getSize":105,"./../AssignableDisposable":74,"./checkCacheAndReport":79}],81:[function(require,module,exports){
 var GetResponse = require("./GetResponse");
 
 /**
@@ -4188,7 +5731,7 @@ module.exports = function getWithPaths(paths) {
     return new GetResponse(this, paths);
 };
 
-},{"./GetResponse":56}],60:[function(require,module,exports){
+},{"./GetResponse":78}],82:[function(require,module,exports){
 var pathSyntax = require("falcor-path-syntax");
 var ModelResponse = require("./../ModelResponse");
 var GET_VALID_INPUT = require("./validInput");
@@ -4214,13 +5757,13 @@ module.exports = function get() {
     return new GetResponse(this, paths);
 };
 
-},{"./../../support/validateInput":111,"./../ModelResponse":55,"./GetResponse":56,"./validInput":61,"falcor-path-syntax":124}],61:[function(require,module,exports){
+},{"./../../support/validateInput":133,"./../ModelResponse":77,"./GetResponse":78,"./validInput":83,"falcor-path-syntax":13}],83:[function(require,module,exports){
 module.exports = {
     path: true,
     pathSyntax: true
 };
 
-},{}],62:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 var ModelResponse = require("./../ModelResponse");
 var pathSyntax = require("falcor-path-syntax");
 var isArray = Array.isArray;
@@ -4330,7 +5873,7 @@ SetResponse.prototype.progressively = function progressively() {
                            this._isJSONGraph, true);
 };
 
-},{"./../../support/isJSONEnvelope":93,"./../../support/isJSONGraphEnvelope":94,"./../../support/isPathValue":96,"./../ModelResponse":55,"./setRequestCycle":65,"falcor-path-syntax":124}],63:[function(require,module,exports){
+},{"./../../support/isJSONEnvelope":115,"./../../support/isJSONGraphEnvelope":116,"./../../support/isPathValue":118,"./../ModelResponse":77,"./setRequestCycle":87,"falcor-path-syntax":13}],85:[function(require,module,exports){
 var setValidInput = require("./setValidInput");
 var validateInput = require("./../../support/validateInput");
 var SetResponse = require("./SetResponse");
@@ -4353,7 +5896,7 @@ module.exports = function set() {
     return new SetResponse(this, args);
 };
 
-},{"./../../support/validateInput":111,"./../ModelResponse":55,"./SetResponse":62,"./setValidInput":66}],64:[function(require,module,exports){
+},{"./../../support/validateInput":133,"./../ModelResponse":77,"./SetResponse":84,"./setValidInput":88}],86:[function(require,module,exports){
 var arrayFlatMap = require("./../../support/array-flat-map");
 
 /**
@@ -4408,7 +5951,7 @@ function pluckEnvelopePaths(jsonGraphEnvelope) {
     return jsonGraphEnvelope.paths;
 }
 
-},{"./../../support/array-flat-map":76}],65:[function(require,module,exports){
+},{"./../../support/array-flat-map":98}],87:[function(require,module,exports){
 var emptyArray = [];
 var AssignableDisposable = require("./../AssignableDisposable");
 var GetResponse = require("./../get/GetResponse");
@@ -4517,7 +6060,7 @@ function subscribeToFollowupGet(model, observer, requestedPaths, isJSONGraph,
     return response.subscribe(observer);
 }
 
-},{"./../../errors/InvalidSourceError":16,"./../../errors/MaxRetryExceededError":17,"./../../get":27,"./../AssignableDisposable":52,"./../get/GetResponse":56,"./setGroupsIntoCache":64}],66:[function(require,module,exports){
+},{"./../../errors/InvalidSourceError":38,"./../../errors/MaxRetryExceededError":39,"./../../get":49,"./../AssignableDisposable":74,"./../get/GetResponse":78,"./setGroupsIntoCache":86}],88:[function(require,module,exports){
 module.exports = {
     pathValue: true,
     pathSyntax: true,
@@ -4526,7 +6069,7 @@ module.exports = {
 };
 
 
-},{}],67:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 var asap = require("asap");
 var empty = {dispose: function() {}};
 
@@ -4547,7 +6090,7 @@ ASAPScheduler.prototype.scheduleWithState = function scheduleWithState(state, ac
 
 module.exports = ASAPScheduler;
 
-},{"asap":118}],68:[function(require,module,exports){
+},{"asap":7}],90:[function(require,module,exports){
 var empty = {dispose: function() {}};
 
 function ImmediateScheduler() {}
@@ -4564,7 +6107,7 @@ ImmediateScheduler.prototype.scheduleWithState = function scheduleWithState(stat
 
 module.exports = ImmediateScheduler;
 
-},{}],69:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 function TimeoutScheduler(delay) {
     this.delay = delay;
 }
@@ -4598,7 +6141,7 @@ TimerDisposable.prototype.dispose = function() {
 
 module.exports = TimeoutScheduler;
 
-},{}],70:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 var createHardlink = require("./../support/createHardlink");
 var $ref = require("./../types/ref");
 
@@ -4819,7 +6362,7 @@ function setNode(
     return [node, parent, message, messageParent];
 }
 
-},{"./../errors/NullInPathError":18,"./../support/createHardlink":80,"./../support/expireNode":81,"./../support/incrementVersion":87,"./../support/isAlreadyExpired":89,"./../support/isFunction":91,"./../support/isPrimitive":97,"./../support/mergeJSONGraphNode":98,"./../types/ref":115,"falcor-path-utils":133}],71:[function(require,module,exports){
+},{"./../errors/NullInPathError":40,"./../support/createHardlink":102,"./../support/expireNode":103,"./../support/incrementVersion":109,"./../support/isAlreadyExpired":111,"./../support/isFunction":113,"./../support/isPrimitive":119,"./../support/mergeJSONGraphNode":120,"./../types/ref":137,"falcor-path-utils":22}],93:[function(require,module,exports){
 var createHardlink = require("./../support/createHardlink");
 var __prefix = require("./../internal/unicodePrefix");
 var $ref = require("./../types/ref");
@@ -5065,7 +6608,7 @@ function getKeys(pathMap) {
     return void 0;
 }
 
-},{"./../errors/NullInPathError":18,"./../get/getBoundValue":21,"./../internal/unicodePrefix":40,"./../support/createHardlink":80,"./../support/expireNode":81,"./../support/hasOwn":86,"./../support/incrementVersion":87,"./../support/isExpired":90,"./../support/isFunction":91,"./../support/isObject":95,"./../support/isPrimitive":97,"./../support/mergeValueOrInsertBranch":99,"./../types/ref":115}],72:[function(require,module,exports){
+},{"./../errors/NullInPathError":40,"./../get/getBoundValue":43,"./../internal/unicodePrefix":62,"./../support/createHardlink":102,"./../support/expireNode":103,"./../support/hasOwn":108,"./../support/incrementVersion":109,"./../support/isExpired":112,"./../support/isFunction":113,"./../support/isObject":117,"./../support/isPrimitive":119,"./../support/mergeValueOrInsertBranch":121,"./../types/ref":137}],94:[function(require,module,exports){
 var createHardlink = require("./../support/createHardlink");
 var $ref = require("./../types/ref");
 
@@ -5285,7 +6828,7 @@ function setNode(
     return [node, parent];
 }
 
-},{"./../errors/NullInPathError":18,"./../get/getBoundValue":21,"./../support/createHardlink":80,"./../support/expireNode":81,"./../support/incrementVersion":87,"./../support/isExpired":90,"./../support/isFunction":91,"./../support/isPrimitive":97,"./../support/mergeValueOrInsertBranch":99,"./../types/ref":115,"falcor-path-utils":133}],73:[function(require,module,exports){
+},{"./../errors/NullInPathError":40,"./../get/getBoundValue":43,"./../support/createHardlink":102,"./../support/expireNode":103,"./../support/incrementVersion":109,"./../support/isExpired":112,"./../support/isFunction":113,"./../support/isPrimitive":119,"./../support/mergeValueOrInsertBranch":121,"./../types/ref":137,"falcor-path-utils":22}],95:[function(require,module,exports){
 var jsong = require("falcor-json-graph");
 var ModelResponse = require("./../response/ModelResponse");
 var isPathValue = require("./../support/isPathValue");
@@ -5323,7 +6866,7 @@ module.exports = function setValue(pathArg, valueArg) {
     });
 };
 
-},{"./../response/ModelResponse":55,"./../support/isPathValue":96,"falcor-json-graph":120}],74:[function(require,module,exports){
+},{"./../response/ModelResponse":77,"./../support/isPathValue":118,"falcor-json-graph":9}],96:[function(require,module,exports){
 var pathSyntax = require("falcor-path-syntax");
 var isPathValue = require("./../support/isPathValue");
 var setPathValues = require("./../set/setPathValues");
@@ -5364,7 +6907,7 @@ module.exports = function setValueSync(pathArg, valueArg, errorSelectorArg, comp
     }
 };
 
-},{"./../set/setPathValues":72,"./../support/isPathValue":96,"falcor-path-syntax":124}],75:[function(require,module,exports){
+},{"./../set/setPathValues":94,"./../support/isPathValue":118,"falcor-path-syntax":13}],97:[function(require,module,exports){
 module.exports = function arrayClone(array) {
     if (!array) {
         return array;
@@ -5378,7 +6921,7 @@ module.exports = function arrayClone(array) {
     return array2;
 };
 
-},{}],76:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 module.exports = function arrayFlatMap(array, selector) {
     var index = -1;
     var i = -1;
@@ -5395,7 +6938,7 @@ module.exports = function arrayFlatMap(array, selector) {
     return array2;
 };
 
-},{}],77:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 module.exports = function arrayMap(array, selector) {
     var i = -1;
     var n = array.length;
@@ -5406,7 +6949,7 @@ module.exports = function arrayMap(array, selector) {
     return array2;
 };
 
-},{}],78:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 module.exports = function arraySlice(array, indexArg, endArg) {
     var index = indexArg || 0;
     var i = -1;
@@ -5427,7 +6970,7 @@ module.exports = function arraySlice(array, indexArg, endArg) {
     return array2;
 };
 
-},{}],79:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 var unicodePrefix = require("./../internal/unicodePrefix");
 var hasOwn = require("./../support/hasOwn");
 var isArray = Array.isArray;
@@ -5448,7 +6991,7 @@ module.exports = function clone(value) {
     return dest;
 };
 
-},{"./../internal/unicodePrefix":40,"./../support/hasOwn":86,"./../support/isObject":95}],80:[function(require,module,exports){
+},{"./../internal/unicodePrefix":62,"./../support/hasOwn":108,"./../support/isObject":117}],102:[function(require,module,exports){
 var __ref = require("./../internal/ref");
 
 module.exports = function createHardlink(from, to) {
@@ -5463,7 +7006,7 @@ module.exports = function createHardlink(from, to) {
     from.ツcontext = to;
 };
 
-},{"./../internal/ref":39}],81:[function(require,module,exports){
+},{"./../internal/ref":61}],103:[function(require,module,exports){
 var splice = require("./../lru/splice");
 
 module.exports = function expireNode(node, expired, lru) {
@@ -5475,25 +7018,25 @@ module.exports = function expireNode(node, expired, lru) {
     return node;
 };
 
-},{"./../lru/splice":45}],82:[function(require,module,exports){
+},{"./../lru/splice":67}],104:[function(require,module,exports){
 var isObject = require("./isObject");
 module.exports = function getSize(node) {
     return isObject(node) && node.$expires || undefined;
 };
 
-},{"./isObject":95}],83:[function(require,module,exports){
+},{"./isObject":117}],105:[function(require,module,exports){
 var isObject = require("./../support/isObject");
 module.exports = function getSize(node) {
     return isObject(node) && node.$size || 0;
 };
 
-},{"./../support/isObject":95}],84:[function(require,module,exports){
+},{"./../support/isObject":117}],106:[function(require,module,exports){
 var isObject = require("./../support/isObject");
 module.exports = function getTimestamp(node) {
     return isObject(node) && node.$timestamp || undefined;
 };
 
-},{"./../support/isObject":95}],85:[function(require,module,exports){
+},{"./../support/isObject":117}],107:[function(require,module,exports){
 var isObject = require("./../support/isObject");
 
 module.exports = function getType(node, anyType) {
@@ -5504,7 +7047,7 @@ module.exports = function getType(node, anyType) {
     return type;
 };
 
-},{"./../support/isObject":95}],86:[function(require,module,exports){
+},{"./../support/isObject":117}],108:[function(require,module,exports){
 var isObject = require("./isObject");
 var hasOwn = Object.prototype.hasOwnProperty;
 
@@ -5512,13 +7055,13 @@ module.exports = function(obj, prop) {
   return isObject(obj) && hasOwn.call(obj, prop);
 };
 
-},{"./isObject":95}],87:[function(require,module,exports){
+},{"./isObject":117}],109:[function(require,module,exports){
 var version = 1;
 module.exports = function incrementVersion() {
     return version++;
 };
 
-},{}],88:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 module.exports = function insertNode(node, parent, key, version, optimizedPath) {
     node.ツkey = key;
     node.ツparent = parent;
@@ -5535,7 +7078,7 @@ module.exports = function insertNode(node, parent, key, version, optimizedPath) 
     return node;
 };
 
-},{}],89:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 var now = require("./../support/now");
 var $now = require("./../values/expires-now");
 var $never = require("./../values/expires-never");
@@ -5548,7 +7091,7 @@ module.exports = function isAlreadyExpired(node) {
         exp < now());
 };
 
-},{"./../support/now":101,"./../values/expires-never":116,"./../values/expires-now":117}],90:[function(require,module,exports){
+},{"./../support/now":123,"./../values/expires-never":138,"./../values/expires-now":139}],112:[function(require,module,exports){
 var now = require("./../support/now");
 var $now = require("../values/expires-now");
 var $never = require("../values/expires-never");
@@ -5560,14 +7103,14 @@ module.exports = function isExpired(node) {
         exp === $now || exp < now());
 };
 
-},{"../values/expires-never":116,"../values/expires-now":117,"./../support/now":101}],91:[function(require,module,exports){
+},{"../values/expires-never":138,"../values/expires-now":139,"./../support/now":123}],113:[function(require,module,exports){
 var functionTypeof = "function";
 
 module.exports = function isFunction(func) {
     return Boolean(func) && typeof func === functionTypeof;
 };
 
-},{}],92:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 var unicodePrefix = require("./../internal/unicodePrefix");
 
 /**
@@ -5583,14 +7126,14 @@ module.exports = function isInternalKey(x) {
         x.charAt(0) === unicodePrefix;
 };
 
-},{"./../internal/unicodePrefix":40}],93:[function(require,module,exports){
+},{"./../internal/unicodePrefix":62}],115:[function(require,module,exports){
 var isObject = require("./../support/isObject");
 
 module.exports = function isJSONEnvelope(envelope) {
     return isObject(envelope) && ("json" in envelope);
 };
 
-},{"./../support/isObject":95}],94:[function(require,module,exports){
+},{"./../support/isObject":117}],116:[function(require,module,exports){
 var isArray = Array.isArray;
 var isObject = require("./../support/isObject");
 
@@ -5604,13 +7147,13 @@ module.exports = function isJSONGraphEnvelope(envelope) {
     );
 };
 
-},{"./../support/isObject":95}],95:[function(require,module,exports){
+},{"./../support/isObject":117}],117:[function(require,module,exports){
 var objTypeof = "object";
 module.exports = function isObject(value) {
     return value !== null && typeof value === objTypeof;
 };
 
-},{}],96:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 var isArray = Array.isArray;
 var isObject = require("./../support/isObject");
 
@@ -5621,13 +7164,13 @@ module.exports = function isPathValue(pathValue) {
         ));
 };
 
-},{"./../support/isObject":95}],97:[function(require,module,exports){
+},{"./../support/isObject":117}],119:[function(require,module,exports){
 var objTypeof = "object";
 module.exports = function isPrimitive(value) {
     return value == null || typeof value !== objTypeof;
 };
 
-},{}],98:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 var $ref = require("./../types/ref");
 var $error = require("./../types/error");
 var getSize = require("./../support/getSize");
@@ -5825,7 +7368,7 @@ module.exports = function mergeJSONGraphNode(
     return node;
 };
 
-},{"./../support/expireNode":81,"./../support/getSize":83,"./../support/getTimestamp":84,"./../support/insertNode":88,"./../support/isExpired":90,"./../support/isFunction":91,"./../support/isObject":95,"./../support/reconstructPath":102,"./../support/replaceNode":105,"./../support/updateNodeAncestors":110,"./../support/wrapNode":112,"./../types/error":114,"./../types/ref":115}],99:[function(require,module,exports){
+},{"./../support/expireNode":103,"./../support/getSize":105,"./../support/getTimestamp":106,"./../support/insertNode":110,"./../support/isExpired":112,"./../support/isFunction":113,"./../support/isObject":117,"./../support/reconstructPath":124,"./../support/replaceNode":127,"./../support/updateNodeAncestors":132,"./../support/wrapNode":134,"./../types/error":136,"./../types/ref":137}],121:[function(require,module,exports){
 var $ref = require("./../types/ref");
 var $error = require("./../types/error");
 var getType = require("./../support/getType");
@@ -5894,13 +7437,13 @@ module.exports = function mergeValueOrInsertBranch(
     return node;
 };
 
-},{"./../support/expireNode":81,"./../support/getSize":83,"./../support/getTimestamp":84,"./../support/getType":85,"./../support/insertNode":88,"./../support/isExpired":90,"./../support/isFunction":91,"./../support/isPrimitive":97,"./../support/reconstructPath":102,"./../support/replaceNode":105,"./../support/updateBackReferenceVersions":109,"./../support/updateNodeAncestors":110,"./../support/wrapNode":112,"./../types/error":114,"./../types/ref":115}],100:[function(require,module,exports){
+},{"./../support/expireNode":103,"./../support/getSize":105,"./../support/getTimestamp":106,"./../support/getType":107,"./../support/insertNode":110,"./../support/isExpired":112,"./../support/isFunction":113,"./../support/isPrimitive":119,"./../support/reconstructPath":124,"./../support/replaceNode":127,"./../support/updateBackReferenceVersions":131,"./../support/updateNodeAncestors":132,"./../support/wrapNode":134,"./../types/error":136,"./../types/ref":137}],122:[function(require,module,exports){
 module.exports = function noop() {};
 
-},{}],101:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 module.exports = Date.now;
 
-},{}],102:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 /**
  * Reconstructs the path for the current key, from currentPath (requestedPath)
  * state maintained during set/merge walk operations.
@@ -5922,7 +7465,7 @@ module.exports = function reconstructPath(currentPath, key) {
     return path;
 };
 
-},{}],103:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 var $ref = require("./../types/ref");
 var splice = require("./../lru/splice");
 var isObject = require("./../support/isObject");
@@ -5945,7 +7488,7 @@ module.exports = function removeNode(node, parent, key, lru) {
     return false;
 };
 
-},{"./../lru/splice":45,"./../support/isObject":95,"./../support/unlinkBackReferences":107,"./../support/unlinkForwardReference":108,"./../types/ref":115}],104:[function(require,module,exports){
+},{"./../lru/splice":67,"./../support/isObject":117,"./../support/unlinkBackReferences":129,"./../support/unlinkForwardReference":130,"./../types/ref":137}],126:[function(require,module,exports){
 var hasOwn = require("./../support/hasOwn");
 var prefix = require("./../internal/unicodePrefix");
 var removeNode = require("./../support/removeNode");
@@ -5964,7 +7507,7 @@ module.exports = function removeNodeAndDescendants(node, parent, key, lru) {
     return false;
 };
 
-},{"./../internal/unicodePrefix":40,"./../support/hasOwn":86,"./../support/removeNode":103}],105:[function(require,module,exports){
+},{"./../internal/unicodePrefix":62,"./../support/hasOwn":108,"./../support/removeNode":125}],127:[function(require,module,exports){
 var isObject = require("./../support/isObject");
 var transferBackReferences = require("./../support/transferBackReferences");
 var removeNodeAndDescendants = require("./../support/removeNodeAndDescendants");
@@ -5981,7 +7524,7 @@ module.exports = function replaceNode(node, replacement, parent, key, lru) {
     return replacement;
 };
 
-},{"./../support/isObject":95,"./../support/removeNodeAndDescendants":104,"./../support/transferBackReferences":106}],106:[function(require,module,exports){
+},{"./../support/isObject":117,"./../support/removeNodeAndDescendants":126,"./../support/transferBackReferences":128}],128:[function(require,module,exports){
 var __ref = require("./../internal/ref");
 
 module.exports = function transferBackReferences(fromNode, destNode) {
@@ -6001,7 +7544,7 @@ module.exports = function transferBackReferences(fromNode, destNode) {
     return destNode;
 };
 
-},{"./../internal/ref":39}],107:[function(require,module,exports){
+},{"./../internal/ref":61}],129:[function(require,module,exports){
 var __ref = require("./../internal/ref");
 
 module.exports = function unlinkBackReferences(node) {
@@ -6016,7 +7559,7 @@ module.exports = function unlinkBackReferences(node) {
     return node;
 };
 
-},{"./../internal/ref":39}],108:[function(require,module,exports){
+},{"./../internal/ref":61}],130:[function(require,module,exports){
 var __ref = require("./../internal/ref");
 
 module.exports = function unlinkForwardReference(reference) {
@@ -6033,7 +7576,7 @@ module.exports = function unlinkForwardReference(reference) {
     return reference;
 };
 
-},{"./../internal/ref":39}],109:[function(require,module,exports){
+},{"./../internal/ref":61}],131:[function(require,module,exports){
 var __ref = require("./../internal/ref");
 
 module.exports = function updateBackReferenceVersions(nodeArg, version) {
@@ -6054,7 +7597,7 @@ module.exports = function updateBackReferenceVersions(nodeArg, version) {
     return nodeArg;
 };
 
-},{"./../internal/ref":39}],110:[function(require,module,exports){
+},{"./../internal/ref":61}],132:[function(require,module,exports){
 var removeNode = require("./../support/removeNode");
 var updateBackReferenceVersions = require("./../support/updateBackReferenceVersions");
 
@@ -6073,7 +7616,7 @@ module.exports = function updateNodeAncestors(nodeArg, offset, lru, version) {
     return nodeArg;
 };
 
-},{"./../support/removeNode":103,"./../support/updateBackReferenceVersions":109}],111:[function(require,module,exports){
+},{"./../support/removeNode":125,"./../support/updateBackReferenceVersions":131}],133:[function(require,module,exports){
 var isArray = Array.isArray;
 var isPathValue = require("./../support/isPathValue");
 var isJSONGraphEnvelope = require("./../support/isJSONGraphEnvelope");
@@ -6131,7 +7674,7 @@ module.exports = function validateInput(args, allowedInput, method) {
     return true;
 };
 
-},{"./../support/isJSONEnvelope":93,"./../support/isJSONGraphEnvelope":94,"./../support/isPathValue":96,"falcor-path-syntax":124}],112:[function(require,module,exports){
+},{"./../support/isJSONEnvelope":115,"./../support/isJSONGraphEnvelope":116,"./../support/isPathValue":118,"falcor-path-syntax":13}],134:[function(require,module,exports){
 var now = require("./../support/now");
 var expiresNow = require("../values/expires-now");
 
@@ -6198,1552 +7741,20 @@ module.exports = function wrapNode(nodeArg, typeArg, value) {
     return node;
 };
 
-},{"../values/expires-now":117,"./../support/clone":79,"./../support/getExpires":82,"./../support/getSize":83,"./../support/now":101,"./../types/atom":113}],113:[function(require,module,exports){
+},{"../values/expires-now":139,"./../support/clone":101,"./../support/getExpires":104,"./../support/getSize":105,"./../support/now":123,"./../types/atom":135}],135:[function(require,module,exports){
 module.exports = "atom";
 
-},{}],114:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 module.exports = "error";
 
-},{}],115:[function(require,module,exports){
+},{}],137:[function(require,module,exports){
 module.exports = "ref";
 
-},{}],116:[function(require,module,exports){
+},{}],138:[function(require,module,exports){
 module.exports = 1;
 
-},{}],117:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 module.exports = 0;
-
-},{}],118:[function(require,module,exports){
-"use strict";
-
-// rawAsap provides everything we need except exception management.
-var rawAsap = require("./raw");
-// RawTasks are recycled to reduce GC churn.
-var freeTasks = [];
-// We queue errors to ensure they are thrown in right order (FIFO).
-// Array-as-queue is good enough here, since we are just dealing with exceptions.
-var pendingErrors = [];
-var requestErrorThrow = rawAsap.makeRequestCallFromTimer(throwFirstError);
-
-function throwFirstError() {
-    if (pendingErrors.length) {
-        throw pendingErrors.shift();
-    }
-}
-
-/**
- * Calls a task as soon as possible after returning, in its own event, with priority
- * over other events like animation, reflow, and repaint. An error thrown from an
- * event will not interrupt, nor even substantially slow down the processing of
- * other events, but will be rather postponed to a lower priority event.
- * @param {{call}} task A callable object, typically a function that takes no
- * arguments.
- */
-module.exports = asap;
-function asap(task) {
-    var rawTask;
-    if (freeTasks.length) {
-        rawTask = freeTasks.pop();
-    } else {
-        rawTask = new RawTask();
-    }
-    rawTask.task = task;
-    rawAsap(rawTask);
-}
-
-// We wrap tasks with recyclable task objects.  A task object implements
-// `call`, just like a function.
-function RawTask() {
-    this.task = null;
-}
-
-// The sole purpose of wrapping the task is to catch the exception and recycle
-// the task object after its single use.
-RawTask.prototype.call = function () {
-    try {
-        this.task.call();
-    } catch (error) {
-        if (asap.onerror) {
-            // This hook exists purely for testing purposes.
-            // Its name will be periodically randomized to break any code that
-            // depends on its existence.
-            asap.onerror(error);
-        } else {
-            // In a web browser, exceptions are not fatal. However, to avoid
-            // slowing down the queue of pending tasks, we rethrow the error in a
-            // lower priority turn.
-            pendingErrors.push(error);
-            requestErrorThrow();
-        }
-    } finally {
-        this.task = null;
-        freeTasks[freeTasks.length] = this;
-    }
-};
-
-},{"./raw":119}],119:[function(require,module,exports){
-(function (global){
-"use strict";
-
-// Use the fastest means possible to execute a task in its own turn, with
-// priority over other events including IO, animation, reflow, and redraw
-// events in browsers.
-//
-// An exception thrown by a task will permanently interrupt the processing of
-// subsequent tasks. The higher level `asap` function ensures that if an
-// exception is thrown by a task, that the task queue will continue flushing as
-// soon as possible, but if you use `rawAsap` directly, you are responsible to
-// either ensure that no exceptions are thrown from your task, or to manually
-// call `rawAsap.requestFlush` if an exception is thrown.
-module.exports = rawAsap;
-function rawAsap(task) {
-    if (!queue.length) {
-        requestFlush();
-        flushing = true;
-    }
-    // Equivalent to push, but avoids a function call.
-    queue[queue.length] = task;
-}
-
-var queue = [];
-// Once a flush has been requested, no further calls to `requestFlush` are
-// necessary until the next `flush` completes.
-var flushing = false;
-// `requestFlush` is an implementation-specific method that attempts to kick
-// off a `flush` event as quickly as possible. `flush` will attempt to exhaust
-// the event queue before yielding to the browser's own event loop.
-var requestFlush;
-// The position of the next task to execute in the task queue. This is
-// preserved between calls to `flush` so that it can be resumed if
-// a task throws an exception.
-var index = 0;
-// If a task schedules additional tasks recursively, the task queue can grow
-// unbounded. To prevent memory exhaustion, the task queue will periodically
-// truncate already-completed tasks.
-var capacity = 1024;
-
-// The flush function processes all tasks that have been scheduled with
-// `rawAsap` unless and until one of those tasks throws an exception.
-// If a task throws an exception, `flush` ensures that its state will remain
-// consistent and will resume where it left off when called again.
-// However, `flush` does not make any arrangements to be called again if an
-// exception is thrown.
-function flush() {
-    while (index < queue.length) {
-        var currentIndex = index;
-        // Advance the index before calling the task. This ensures that we will
-        // begin flushing on the next task the task throws an error.
-        index = index + 1;
-        queue[currentIndex].call();
-        // Prevent leaking memory for long chains of recursive calls to `asap`.
-        // If we call `asap` within tasks scheduled by `asap`, the queue will
-        // grow, but to avoid an O(n) walk for every task we execute, we don't
-        // shift tasks off the queue after they have been executed.
-        // Instead, we periodically shift 1024 tasks off the queue.
-        if (index > capacity) {
-            // Manually shift all values starting at the index back to the
-            // beginning of the queue.
-            for (var scan = 0, newLength = queue.length - index; scan < newLength; scan++) {
-                queue[scan] = queue[scan + index];
-            }
-            queue.length -= index;
-            index = 0;
-        }
-    }
-    queue.length = 0;
-    index = 0;
-    flushing = false;
-}
-
-// `requestFlush` is implemented using a strategy based on data collected from
-// every available SauceLabs Selenium web driver worker at time of writing.
-// https://docs.google.com/spreadsheets/d/1mG-5UYGup5qxGdEMWkhP6BWCz053NUb2E1QoUTU16uA/edit#gid=783724593
-
-// Safari 6 and 6.1 for desktop, iPad, and iPhone are the only browsers that
-// have WebKitMutationObserver but not un-prefixed MutationObserver.
-// Must use `global` instead of `window` to work in both frames and web
-// workers. `global` is a provision of Browserify, Mr, Mrs, or Mop.
-var BrowserMutationObserver = global.MutationObserver || global.WebKitMutationObserver;
-
-// MutationObservers are desirable because they have high priority and work
-// reliably everywhere they are implemented.
-// They are implemented in all modern browsers.
-//
-// - Android 4-4.3
-// - Chrome 26-34
-// - Firefox 14-29
-// - Internet Explorer 11
-// - iPad Safari 6-7.1
-// - iPhone Safari 7-7.1
-// - Safari 6-7
-if (typeof BrowserMutationObserver === "function") {
-    requestFlush = makeRequestCallFromMutationObserver(flush);
-
-// MessageChannels are desirable because they give direct access to the HTML
-// task queue, are implemented in Internet Explorer 10, Safari 5.0-1, and Opera
-// 11-12, and in web workers in many engines.
-// Although message channels yield to any queued rendering and IO tasks, they
-// would be better than imposing the 4ms delay of timers.
-// However, they do not work reliably in Internet Explorer or Safari.
-
-// Internet Explorer 10 is the only browser that has setImmediate but does
-// not have MutationObservers.
-// Although setImmediate yields to the browser's renderer, it would be
-// preferrable to falling back to setTimeout since it does not have
-// the minimum 4ms penalty.
-// Unfortunately there appears to be a bug in Internet Explorer 10 Mobile (and
-// Desktop to a lesser extent) that renders both setImmediate and
-// MessageChannel useless for the purposes of ASAP.
-// https://github.com/kriskowal/q/issues/396
-
-// Timers are implemented universally.
-// We fall back to timers in workers in most engines, and in foreground
-// contexts in the following browsers.
-// However, note that even this simple case requires nuances to operate in a
-// broad spectrum of browsers.
-//
-// - Firefox 3-13
-// - Internet Explorer 6-9
-// - iPad Safari 4.3
-// - Lynx 2.8.7
-} else {
-    requestFlush = makeRequestCallFromTimer(flush);
-}
-
-// `requestFlush` requests that the high priority event queue be flushed as
-// soon as possible.
-// This is useful to prevent an error thrown in a task from stalling the event
-// queue if the exception handled by Node.js’s
-// `process.on("uncaughtException")` or by a domain.
-rawAsap.requestFlush = requestFlush;
-
-// To request a high priority event, we induce a mutation observer by toggling
-// the text of a text node between "1" and "-1".
-function makeRequestCallFromMutationObserver(callback) {
-    var toggle = 1;
-    var observer = new BrowserMutationObserver(callback);
-    var node = document.createTextNode("");
-    observer.observe(node, {characterData: true});
-    return function requestCall() {
-        toggle = -toggle;
-        node.data = toggle;
-    };
-}
-
-// The message channel technique was discovered by Malte Ubl and was the
-// original foundation for this library.
-// http://www.nonblocking.io/2011/06/windownexttick.html
-
-// Safari 6.0.5 (at least) intermittently fails to create message ports on a
-// page's first load. Thankfully, this version of Safari supports
-// MutationObservers, so we don't need to fall back in that case.
-
-// function makeRequestCallFromMessageChannel(callback) {
-//     var channel = new MessageChannel();
-//     channel.port1.onmessage = callback;
-//     return function requestCall() {
-//         channel.port2.postMessage(0);
-//     };
-// }
-
-// For reasons explained above, we are also unable to use `setImmediate`
-// under any circumstances.
-// Even if we were, there is another bug in Internet Explorer 10.
-// It is not sufficient to assign `setImmediate` to `requestFlush` because
-// `setImmediate` must be called *by name* and therefore must be wrapped in a
-// closure.
-// Never forget.
-
-// function makeRequestCallFromSetImmediate(callback) {
-//     return function requestCall() {
-//         setImmediate(callback);
-//     };
-// }
-
-// Safari 6.0 has a problem where timers will get lost while the user is
-// scrolling. This problem does not impact ASAP because Safari 6.0 supports
-// mutation observers, so that implementation is used instead.
-// However, if we ever elect to use timers in Safari, the prevalent work-around
-// is to add a scroll event listener that calls for a flush.
-
-// `setTimeout` does not call the passed callback if the delay is less than
-// approximately 7 in web workers in Firefox 8 through 18, and sometimes not
-// even then.
-
-function makeRequestCallFromTimer(callback) {
-    return function requestCall() {
-        // We dispatch a timeout with a specified delay of 0 for engines that
-        // can reliably accommodate that request. This will usually be snapped
-        // to a 4 milisecond delay, but once we're flushing, there's no delay
-        // between events.
-        var timeoutHandle = setTimeout(handleTimer, 0);
-        // However, since this timer gets frequently dropped in Firefox
-        // workers, we enlist an interval handle that will try to fire
-        // an event 20 times per second until it succeeds.
-        var intervalHandle = setInterval(handleTimer, 50);
-
-        function handleTimer() {
-            // Whichever timer succeeds will cancel both timers and
-            // execute the callback.
-            clearTimeout(timeoutHandle);
-            clearInterval(intervalHandle);
-            callback();
-        }
-    };
-}
-
-// This is for `asap.js` only.
-// Its name will be periodically randomized to break any code that depends on
-// its existence.
-rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
-
-// ASAP was originally a nextTick shim included in Q. This was factored out
-// into this ASAP package. It was later adapted to RSVP which made further
-// amendments. These decisions, particularly to marginalize MessageChannel and
-// to capture the MutationObserver implementation in a closure, were integrated
-// back into ASAP proper.
-// https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],120:[function(require,module,exports){
-var pathSyntax = require("falcor-path-syntax");
-
-function sentinel(type, value, props) {
-    var copy = Object.create(null);
-    if (props != null) {
-        for(var key in props) {
-            copy[key] = props[key];
-        }
-        
-        copy["$type"] = type;
-        copy.value = value;
-        return copy;
-    }
-    else {
-        return { $type: type, value: value };
-    }    
-}
-
-module.exports = {
-    ref: function ref(path, props) {
-        return sentinel("ref", pathSyntax.fromPath(path), props);
-    },
-    atom: function atom(value, props) {
-        return sentinel("atom", value, props);        
-    },
-    undefined: function() {
-        return sentinel("atom");
-    },    
-    error: function error(errorValue, props) {
-        return sentinel("error", errorValue, props);        
-    },
-    pathValue: function pathValue(path, value) {
-        return { path: pathSyntax.fromPath(path), value: value };
-    },
-    pathInvalidation: function pathInvalidation(path) {
-        return { path: pathSyntax.fromPath(path), invalidated: true };
-    }    
-};
-
-},{"falcor-path-syntax":124}],121:[function(require,module,exports){
-module.exports = {
-    integers: 'integers',
-    ranges: 'ranges',
-    keys: 'keys'
-};
-
-},{}],122:[function(require,module,exports){
-var TokenTypes = {
-    token: 'token',
-    dotSeparator: '.',
-    commaSeparator: ',',
-    openingBracket: '[',
-    closingBracket: ']',
-    openingBrace: '{',
-    closingBrace: '}',
-    escape: '\\',
-    space: ' ',
-    colon: ':',
-    quote: 'quote',
-    unknown: 'unknown'
-};
-
-module.exports = TokenTypes;
-
-},{}],123:[function(require,module,exports){
-module.exports = {
-    indexer: {
-        nested: 'Indexers cannot be nested.',
-        needQuotes: 'unquoted indexers must be numeric.',
-        empty: 'cannot have empty indexers.',
-        leadingDot: 'Indexers cannot have leading dots.',
-        leadingComma: 'Indexers cannot have leading comma.',
-        requiresComma: 'Indexers require commas between indexer args.',
-        routedTokens: 'Only one token can be used per indexer when specifying routed tokens.'
-    },
-    range: {
-        precedingNaN: 'ranges must be preceded by numbers.',
-        suceedingNaN: 'ranges must be suceeded by numbers.'
-    },
-    routed: {
-        invalid: 'Invalid routed token.  only integers|ranges|keys are supported.'
-    },
-    quote: {
-        empty: 'cannot have empty quoted keys.',
-        illegalEscape: 'Invalid escape character.  Only quotes are escapable.'
-    },
-    unexpectedToken: 'Unexpected token.',
-    invalidIdentifier: 'Invalid Identifier.',
-    invalidPath: 'Please provide a valid path.',
-    throwError: function(err, tokenizer, token) {
-        if (token) {
-            throw err + ' -- ' + tokenizer.parseString + ' with next token: ' + token;
-        }
-        throw err + ' -- ' + tokenizer.parseString;
-    }
-};
-
-
-},{}],124:[function(require,module,exports){
-var Tokenizer = require('./tokenizer');
-var head = require('./parse-tree/head');
-var RoutedTokens = require('./RoutedTokens');
-
-var parser = function parser(string, extendedRules) {
-    return head(new Tokenizer(string, extendedRules));
-};
-
-module.exports = parser;
-
-// Constructs the paths from paths / pathValues that have strings.
-// If it does not have a string, just moves the value into the return
-// results.
-parser.fromPathsOrPathValues = function(paths, ext) {
-    if (!paths) {
-        return [];
-    }
-
-    var out = [];
-    for (var i = 0, len = paths.length; i < len; i++) {
-
-        // Is the path a string
-        if (typeof paths[i] === 'string') {
-            out[i] = parser(paths[i], ext);
-        }
-
-        // is the path a path value with a string value.
-        else if (typeof paths[i].path === 'string') {
-            out[i] = {
-                path: parser(paths[i].path, ext), value: paths[i].value
-            };
-        }
-
-        // just copy it over.
-        else {
-            out[i] = paths[i];
-        }
-    }
-
-    return out;
-};
-
-// If the argument is a string, this with convert, else just return
-// the path provided.
-parser.fromPath = function(path, ext) {
-    if (!path) {
-        return [];
-    }
-
-    if (typeof path === 'string') {
-        return parser(path, ext);
-    }
-
-    return path;
-};
-
-// Potential routed tokens.
-parser.RoutedTokens = RoutedTokens;
-
-},{"./RoutedTokens":121,"./parse-tree/head":125,"./tokenizer":130}],125:[function(require,module,exports){
-var TokenTypes = require('./../TokenTypes');
-var E = require('./../exceptions');
-var indexer = require('./indexer');
-
-/**
- * The top level of the parse tree.  This returns the generated path
- * from the tokenizer.
- */
-module.exports = function head(tokenizer) {
-    var token = tokenizer.next();
-    var state = {};
-    var out = [];
-
-    while (!token.done) {
-
-        switch (token.type) {
-            case TokenTypes.token:
-                var first = +token.token[0];
-                if (!isNaN(first)) {
-                    E.throwError(E.invalidIdentifier, tokenizer);
-                }
-                out[out.length] = token.token;
-                break;
-
-            // dotSeparators at the top level have no meaning
-            case TokenTypes.dotSeparator:
-                if (out.length === 0) {
-                    E.throwError(E.unexpectedToken, tokenizer);
-                }
-                break;
-
-            // Spaces do nothing.
-            case TokenTypes.space:
-                // NOTE: Spaces at the top level are allowed.
-                // titlesById  .summary is a valid path.
-                break;
-
-
-            // Its time to decend the parse tree.
-            case TokenTypes.openingBracket:
-                indexer(tokenizer, token, state, out);
-                break;
-
-            default:
-                E.throwError(E.unexpectedToken, tokenizer);
-                break;
-        }
-
-        // Keep cycling through the tokenizer.
-        token = tokenizer.next();
-    }
-
-    if (out.length === 0) {
-        E.throwError(E.invalidPath, tokenizer);
-    }
-
-    return out;
-};
-
-
-},{"./../TokenTypes":122,"./../exceptions":123,"./indexer":126}],126:[function(require,module,exports){
-var TokenTypes = require('./../TokenTypes');
-var E = require('./../exceptions');
-var idxE = E.indexer;
-var range = require('./range');
-var quote = require('./quote');
-var routed = require('./routed');
-
-/**
- * The indexer is all the logic that happens in between
- * the '[', opening bracket, and ']' closing bracket.
- */
-module.exports = function indexer(tokenizer, openingToken, state, out) {
-    var token = tokenizer.next();
-    var done = false;
-    var allowedMaxLength = 1;
-    var routedIndexer = false;
-
-    // State variables
-    state.indexer = [];
-
-    while (!token.done) {
-
-        switch (token.type) {
-            case TokenTypes.token:
-            case TokenTypes.quote:
-
-                // ensures that token adders are properly delimited.
-                if (state.indexer.length === allowedMaxLength) {
-                    E.throwError(idxE.requiresComma, tokenizer);
-                }
-                break;
-        }
-
-        switch (token.type) {
-            // Extended syntax case
-            case TokenTypes.openingBrace:
-                routedIndexer = true;
-                routed(tokenizer, token, state, out);
-                break;
-
-
-            case TokenTypes.token:
-                var t = +token.token;
-                if (isNaN(t)) {
-                    E.throwError(idxE.needQuotes, tokenizer);
-                }
-                state.indexer[state.indexer.length] = t;
-                break;
-
-            // dotSeparators at the top level have no meaning
-            case TokenTypes.dotSeparator:
-                if (!state.indexer.length) {
-                    E.throwError(idxE.leadingDot, tokenizer);
-                }
-                range(tokenizer, token, state, out);
-                break;
-
-            // Spaces do nothing.
-            case TokenTypes.space:
-                break;
-
-            case TokenTypes.closingBracket:
-                done = true;
-                break;
-
-
-            // The quotes require their own tree due to what can be in it.
-            case TokenTypes.quote:
-                quote(tokenizer, token, state, out);
-                break;
-
-
-            // Its time to decend the parse tree.
-            case TokenTypes.openingBracket:
-                E.throwError(idxE.nested, tokenizer);
-                break;
-
-            case TokenTypes.commaSeparator:
-                ++allowedMaxLength;
-                break;
-
-            default:
-                E.throwError(E.unexpectedToken, tokenizer);
-                break;
-        }
-
-        // If done, leave loop
-        if (done) {
-            break;
-        }
-
-        // Keep cycling through the tokenizer.
-        token = tokenizer.next();
-    }
-
-    if (state.indexer.length === 0) {
-        E.throwError(idxE.empty, tokenizer);
-    }
-
-    if (state.indexer.length > 1 && routedIndexer) {
-        E.throwError(idxE.routedTokens, tokenizer);
-    }
-
-    // Remember, if an array of 1, keySets will be generated.
-    if (state.indexer.length === 1) {
-        state.indexer = state.indexer[0];
-    }
-
-    out[out.length] = state.indexer;
-
-    // Clean state.
-    state.indexer = undefined;
-};
-
-
-},{"./../TokenTypes":122,"./../exceptions":123,"./quote":127,"./range":128,"./routed":129}],127:[function(require,module,exports){
-var TokenTypes = require('./../TokenTypes');
-var E = require('./../exceptions');
-var quoteE = E.quote;
-
-/**
- * quote is all the parse tree in between quotes.  This includes the only
- * escaping logic.
- *
- * parse-tree:
- * <opening-quote>(.|(<escape><opening-quote>))*<opening-quote>
- */
-module.exports = function quote(tokenizer, openingToken, state, out) {
-    var token = tokenizer.next();
-    var innerToken = '';
-    var openingQuote = openingToken.token;
-    var escaping = false;
-    var done = false;
-
-    while (!token.done) {
-
-        switch (token.type) {
-            case TokenTypes.token:
-            case TokenTypes.space:
-
-            case TokenTypes.dotSeparator:
-            case TokenTypes.commaSeparator:
-
-            case TokenTypes.openingBracket:
-            case TokenTypes.closingBracket:
-            case TokenTypes.openingBrace:
-            case TokenTypes.closingBrace:
-                if (escaping) {
-                    E.throwError(quoteE.illegalEscape, tokenizer);
-                }
-
-                innerToken += token.token;
-                break;
-
-
-            case TokenTypes.quote:
-                // the simple case.  We are escaping
-                if (escaping) {
-                    innerToken += token.token;
-                    escaping = false;
-                }
-
-                // its not a quote that is the opening quote
-                else if (token.token !== openingQuote) {
-                    innerToken += token.token;
-                }
-
-                // last thing left.  Its a quote that is the opening quote
-                // therefore we must produce the inner token of the indexer.
-                else {
-                    done = true;
-                }
-
-                break;
-            case TokenTypes.escape:
-                escaping = true;
-                break;
-
-            default:
-                E.throwError(E.unexpectedToken, tokenizer);
-        }
-
-        // If done, leave loop
-        if (done) {
-            break;
-        }
-
-        // Keep cycling through the tokenizer.
-        token = tokenizer.next();
-    }
-
-    if (innerToken.length === 0) {
-        E.throwError(quoteE.empty, tokenizer);
-    }
-
-    state.indexer[state.indexer.length] = innerToken;
-};
-
-
-},{"./../TokenTypes":122,"./../exceptions":123}],128:[function(require,module,exports){
-var Tokenizer = require('./../tokenizer');
-var TokenTypes = require('./../TokenTypes');
-var E = require('./../exceptions');
-
-/**
- * The indexer is all the logic that happens in between
- * the '[', opening bracket, and ']' closing bracket.
- */
-module.exports = function range(tokenizer, openingToken, state, out) {
-    var token = tokenizer.peek();
-    var dotCount = 1;
-    var done = false;
-    var inclusive = true;
-
-    // Grab the last token off the stack.  Must be an integer.
-    var idx = state.indexer.length - 1;
-    var from = Tokenizer.toNumber(state.indexer[idx]);
-    var to;
-
-    if (isNaN(from)) {
-        E.throwError(E.range.precedingNaN, tokenizer);
-    }
-
-    // Why is number checking so difficult in javascript.
-
-    while (!done && !token.done) {
-
-        switch (token.type) {
-
-            // dotSeparators at the top level have no meaning
-            case TokenTypes.dotSeparator:
-                if (dotCount === 3) {
-                    E.throwError(E.unexpectedToken, tokenizer);
-                }
-                ++dotCount;
-
-                if (dotCount === 3) {
-                    inclusive = false;
-                }
-                break;
-
-            case TokenTypes.token:
-                // move the tokenizer forward and save to.
-                to = Tokenizer.toNumber(tokenizer.next().token);
-
-                // throw potential error.
-                if (isNaN(to)) {
-                    E.throwError(E.range.suceedingNaN, tokenizer);
-                }
-
-                done = true;
-                break;
-
-            default:
-                done = true;
-                break;
-        }
-
-        // Keep cycling through the tokenizer.  But ranges have to peek
-        // before they go to the next token since there is no 'terminating'
-        // character.
-        if (!done) {
-            tokenizer.next();
-
-            // go to the next token without consuming.
-            token = tokenizer.peek();
-        }
-
-        // break and remove state information.
-        else {
-            break;
-        }
-    }
-
-    state.indexer[idx] = {from: from, to: inclusive ? to : to - 1};
-};
-
-
-},{"./../TokenTypes":122,"./../exceptions":123,"./../tokenizer":130}],129:[function(require,module,exports){
-var TokenTypes = require('./../TokenTypes');
-var RoutedTokens = require('./../RoutedTokens');
-var E = require('./../exceptions');
-var routedE = E.routed;
-
-/**
- * The routing logic.
- *
- * parse-tree:
- * <opening-brace><routed-token>(:<token>)<closing-brace>
- */
-module.exports = function routed(tokenizer, openingToken, state, out) {
-    var routeToken = tokenizer.next();
-    var named = false;
-    var name = '';
-
-    // ensure the routed token is a valid ident.
-    switch (routeToken.token) {
-        case RoutedTokens.integers:
-        case RoutedTokens.ranges:
-        case RoutedTokens.keys:
-            //valid
-            break;
-        default:
-            E.throwError(routedE.invalid, tokenizer);
-            break;
-    }
-
-    // Now its time for colon or ending brace.
-    var next = tokenizer.next();
-
-    // we are parsing a named identifier.
-    if (next.type === TokenTypes.colon) {
-        named = true;
-
-        // Get the token name.
-        next = tokenizer.next();
-        if (next.type !== TokenTypes.token) {
-            E.throwError(routedE.invalid, tokenizer);
-        }
-        name = next.token;
-
-        // move to the closing brace.
-        next = tokenizer.next();
-    }
-
-    // must close with a brace.
-
-    if (next.type === TokenTypes.closingBrace) {
-        var outputToken = {
-            type: routeToken.token,
-            named: named,
-            name: name
-        };
-        state.indexer[state.indexer.length] = outputToken;
-    }
-
-    // closing brace expected
-    else {
-        E.throwError(routedE.invalid, tokenizer);
-    }
-
-};
-
-
-},{"./../RoutedTokens":121,"./../TokenTypes":122,"./../exceptions":123}],130:[function(require,module,exports){
-var TokenTypes = require('./../TokenTypes');
-var DOT_SEPARATOR = '.';
-var COMMA_SEPARATOR = ',';
-var OPENING_BRACKET = '[';
-var CLOSING_BRACKET = ']';
-var OPENING_BRACE = '{';
-var CLOSING_BRACE = '}';
-var COLON = ':';
-var ESCAPE = '\\';
-var DOUBLE_OUOTES = '"';
-var SINGE_OUOTES = "'";
-var SPACE = " ";
-var SPECIAL_CHARACTERS = '\\\'"[]., ';
-var EXT_SPECIAL_CHARACTERS = '\\{}\'"[]., :';
-
-var Tokenizer = module.exports = function(string, ext) {
-    this._string = string;
-    this._idx = -1;
-    this._extended = ext;
-    this.parseString = '';
-};
-
-Tokenizer.prototype = {
-    /**
-     * grabs the next token either from the peek operation or generates the
-     * next token.
-     */
-    next: function() {
-        var nextToken = this._nextToken ?
-            this._nextToken : getNext(this._string, this._idx, this._extended);
-
-        this._idx = nextToken.idx;
-        this._nextToken = false;
-        this.parseString += nextToken.token.token;
-
-        return nextToken.token;
-    },
-
-    /**
-     * will peak but not increment the tokenizer
-     */
-    peek: function() {
-        var nextToken = this._nextToken ?
-            this._nextToken : getNext(this._string, this._idx, this._extended);
-        this._nextToken = nextToken;
-
-        return nextToken.token;
-    }
-};
-
-Tokenizer.toNumber = function toNumber(x) {
-    if (!isNaN(+x)) {
-        return +x;
-    }
-    return NaN;
-};
-
-function toOutput(token, type, done) {
-    return {
-        token: token,
-        done: done,
-        type: type
-    };
-}
-
-function getNext(string, idx, ext) {
-    var output = false;
-    var token = '';
-    var specialChars = ext ?
-        EXT_SPECIAL_CHARACTERS : SPECIAL_CHARACTERS;
-    var done;
-
-    do {
-
-        done = idx + 1 >= string.length;
-        if (done) {
-            break;
-        }
-
-        // we have to peek at the next token
-        var character = string[idx + 1];
-
-        if (character !== undefined &&
-            specialChars.indexOf(character) === -1) {
-
-            token += character;
-            ++idx;
-            continue;
-        }
-
-        // The token to delimiting character transition.
-        else if (token.length) {
-            break;
-        }
-
-        ++idx;
-        var type;
-        switch (character) {
-            case DOT_SEPARATOR:
-                type = TokenTypes.dotSeparator;
-                break;
-            case COMMA_SEPARATOR:
-                type = TokenTypes.commaSeparator;
-                break;
-            case OPENING_BRACKET:
-                type = TokenTypes.openingBracket;
-                break;
-            case CLOSING_BRACKET:
-                type = TokenTypes.closingBracket;
-                break;
-            case OPENING_BRACE:
-                type = TokenTypes.openingBrace;
-                break;
-            case CLOSING_BRACE:
-                type = TokenTypes.closingBrace;
-                break;
-            case SPACE:
-                type = TokenTypes.space;
-                break;
-            case DOUBLE_OUOTES:
-            case SINGE_OUOTES:
-                type = TokenTypes.quote;
-                break;
-            case ESCAPE:
-                type = TokenTypes.escape;
-                break;
-            case COLON:
-                type = TokenTypes.colon;
-                break;
-            default:
-                type = TokenTypes.unknown;
-                break;
-        }
-        output = toOutput(character, type, false);
-        break;
-    } while (!done);
-
-    if (!output && token.length) {
-        output = toOutput(token, TokenTypes.token, false);
-    }
-
-    if (!output) {
-        output = {done: true};
-    }
-
-    return {
-        token: output,
-        idx: idx
-    };
-}
-
-
-
-},{"./../TokenTypes":122}],131:[function(require,module,exports){
-var toPaths = require('./toPaths');
-var toTree = require('./toTree');
-
-module.exports = function collapse(paths) {
-    var collapseMap = paths.
-        reduce(function(acc, path) {
-            var len = path.length;
-            if (!acc[len]) {
-                acc[len] = [];
-            }
-            acc[len].push(path);
-            return acc;
-        }, {});
-
-    Object.
-        keys(collapseMap).
-        forEach(function(collapseKey) {
-            collapseMap[collapseKey] = toTree(collapseMap[collapseKey]);
-        });
-
-    return toPaths(collapseMap);
-};
-
-},{"./toPaths":137,"./toTree":138}],132:[function(require,module,exports){
-var iterateKeySet = require('./iterateKeySet');
-
-/**
- * Tests to see if the intersection should be stripped from the
- * total paths.  The only way this happens currently is if the entirety
- * of the path is contained in the tree.
- * @private
- */
-module.exports = function hasIntersection(tree, path, depth) {
-    var current = tree;
-    var intersects = true;
-
-    // Continue iteratively going down a path until a complex key is
-    // encountered, then recurse.
-    for (;intersects && depth < path.length; ++depth) {
-        var key = path[depth];
-        var keyType = typeof key;
-
-        // We have to iterate key set
-        if (key && keyType === 'object') {
-            var note = {};
-            var innerKey = iterateKeySet(key, note);
-            var nextDepth = depth + 1;
-
-            // Loop through the innerKeys setting the intersects flag
-            // to each result.  Break out on false.
-            do {
-                var next = current[innerKey];
-                intersects = next !== undefined;
-
-                if (intersects) {
-                    intersects = hasIntersection(next, path, nextDepth);
-                }
-                innerKey = iterateKeySet(key, note);
-            } while (intersects && !note.done);
-
-            // Since we recursed, we shall not pass any further!
-            break;
-        }
-
-        // Its a simple key, just move forward with the testing.
-        current = current[key];
-        intersects = current !== undefined;
-    }
-
-    return intersects;
-};
-
-},{"./iterateKeySet":134}],133:[function(require,module,exports){
-module.exports = {
-    iterateKeySet: require('./iterateKeySet'),
-    toTree: require('./toTree'),
-    toTreeWithUnion: require('./toTreeWithUnion'),
-    pathsComplementFromTree: require('./pathsComplementFromTree'),
-    pathsComplementFromLengthTree: require('./pathsComplementFromLengthTree'),
-    hasIntersection: require('./hasIntersection'),
-    toPaths: require('./toPaths'),
-    collapse: require('./collapse')
-};
-
-},{"./collapse":131,"./hasIntersection":132,"./iterateKeySet":134,"./pathsComplementFromLengthTree":135,"./pathsComplementFromTree":136,"./toPaths":137,"./toTree":138,"./toTreeWithUnion":139}],134:[function(require,module,exports){
-var isArray = Array.isArray;
-
-/**
- * Takes in a keySet and a note attempts to iterate over it.
- * If the value is a primitive, the key will be returned and the note will
- * be marked done
- * If the value is an object, then each value of the range will be returned
- * and when finished the note will be marked done.
- * If the value is an array, each value will be iterated over, if any of the
- * inner values are ranges, those will be iterated over.  When fully done,
- * the note will be marked done.
- *
- * @param {Object|Array|String|Number} keySet -
- * @param {Object} note - The non filled note
- * @returns {String|Number|undefined} - The current iteration value.
- * If undefined, then the keySet is empty
- * @public
- */
-module.exports = function iterateKeySet(keySet, note) {
-    if (note.isArray === undefined) {
-        initializeNote(keySet, note);
-    }
-
-    // Array iteration
-    if (note.isArray) {
-        var nextValue;
-
-        // Cycle through the array and pluck out the next value.
-        do {
-            if (note.loaded && note.rangeOffset > note.to) {
-                ++note.arrayOffset;
-                note.loaded = false;
-            }
-
-            var idx = note.arrayOffset, length = keySet.length;
-            if (idx >= length) {
-                note.done = true;
-                break;
-            }
-
-            var el = keySet[note.arrayOffset];
-            var type = typeof el;
-
-            // Inner range iteration.
-            if (type === 'object') {
-                if (!note.loaded) {
-                    initializeRange(el, note);
-                }
-
-                // Empty to/from
-                if (note.empty) {
-                    continue;
-                }
-
-                nextValue = note.rangeOffset++;
-            }
-
-            // Primitive iteration in array.
-            else {
-                ++note.arrayOffset;
-                nextValue = el;
-            }
-        } while (nextValue === undefined);
-
-        return nextValue;
-    }
-
-    // Range iteration
-    else if (note.isObject) {
-        if (!note.loaded) {
-            initializeRange(keySet, note);
-        }
-        if (note.rangeOffset > note.to) {
-            note.done = true;
-            return undefined;
-        }
-
-        return note.rangeOffset++;
-    }
-
-    // Primitive value
-    else {
-        note.done = true;
-        return keySet;
-    }
-};
-
-function initializeRange(key, memo) {
-    var from = memo.from = key.from || 0;
-    var to = memo.to = key.to ||
-        (typeof key.length === 'number' &&
-        memo.from + key.length - 1 || 0);
-    memo.rangeOffset = memo.from;
-    memo.loaded = true;
-    if (from > to) {
-        memo.empty = true;
-    }
-}
-
-function initializeNote(key, note) {
-    note.done = false;
-    var isObject = note.isObject = !!(key && typeof key === 'object');
-    note.isArray = isObject && isArray(key);
-    note.arrayOffset = 0;
-}
-
-},{}],135:[function(require,module,exports){
-var hasIntersection = require('./hasIntersection');
-
-/**
- * Compares the paths passed in with the tree.  Any of the paths that are in
- * the tree will be stripped from the paths.
- *
- * **Does not mutate** the incoming paths object.
- * **Proper subset** only matching.
- *
- * @param {Array} paths - A list of paths (complex or simple) to strip the
- * intersection
- * @param {Object} tree -
- * @public
- */
-module.exports = function pathsComplementFromLengthTree(paths, tree) {
-    var out = [];
-    var outLength = -1;
-
-    for (var i = 0, len = paths.length; i < len; ++i) {
-        // If this does not intersect then add it to the output.
-        var path = paths[i];
-        if (!hasIntersection(tree[path.length], path, 0)) {
-            out[++outLength] = path;
-        }
-    }
-    return out;
-};
-
-
-},{"./hasIntersection":132}],136:[function(require,module,exports){
-var hasIntersection = require('./hasIntersection');
-
-/**
- * Compares the paths passed in with the tree.  Any of the paths that are in
- * the tree will be stripped from the paths.
- *
- * **Does not mutate** the incoming paths object.
- * **Proper subset** only matching.
- *
- * @param {Array} paths - A list of paths (complex or simple) to strip the
- * intersection
- * @param {Object} tree -
- * @public
- */
-module.exports = function pathsComplementFromTree(paths, tree) {
-    var out = [];
-    var outLength = -1;
-
-    for (var i = 0, len = paths.length; i < len; ++i) {
-        // If this does not intersect then add it to the output.
-        if (!hasIntersection(tree, paths[i], 0)) {
-            out[++outLength] = paths[i];
-        }
-    }
-    return out;
-};
-
-
-},{"./hasIntersection":132}],137:[function(require,module,exports){
-var isArray = Array.isArray;
-var typeOfObject = "object";
-
-/* jshint forin: false */
-module.exports = function toPaths(lengths) {
-    var pathmap;
-    var allPaths = [];
-    var allPathsLength = 0;
-    for (var length in lengths) {
-        if (isNumber(length) && isObject(pathmap = lengths[length])) {
-            var paths = collapsePathMap(pathmap, 0, parseInt(length, 10)).sets;
-            var pathsIndex = -1;
-            var pathsCount = paths.length;
-            while (++pathsIndex < pathsCount) {
-                allPaths[allPathsLength++] = collapsePathSetIndexes(paths[pathsIndex]);
-            }
-        }
-    }
-    return allPaths;
-};
-
-function isObject(value) {
-    return value !== null && typeof value === typeOfObject;
-}
-
-function collapsePathMap(pathmap, depth, length) {
-
-    var key;
-    var code = getHashCode(String(depth));
-    var subs = Object.create(null);
-
-    var codes = [];
-    var codesIndex = -1;
-    var codesCount = 0;
-
-    var pathsets = [];
-    var pathsetsCount = 0;
-
-    var subPath, subCode,
-        subKeys, subKeysIndex, subKeysCount,
-        subSets, subSetsIndex, subSetsCount,
-        pathset, pathsetIndex, pathsetCount,
-        firstSubKey, pathsetClone;
-
-    subKeys = [];
-    subKeysIndex = -1;
-
-    if (depth < length - 1) {
-
-        subKeysCount = getSortedKeys(pathmap, subKeys);
-
-        while (++subKeysIndex < subKeysCount) {
-            key = subKeys[subKeysIndex];
-            subPath = collapsePathMap(pathmap[key], depth + 1, length);
-            subCode = subPath.code;
-            if(subs[subCode]) {
-                subPath = subs[subCode];
-            } else {
-                codes[codesCount++] = subCode;
-                subPath = subs[subCode] = {
-                    keys: [],
-                    sets: subPath.sets
-                };
-            }
-            code = getHashCode(code + key + subCode);
-
-            isNumber(key) &&
-                subPath.keys.push(parseInt(key, 10)) ||
-                subPath.keys.push(key);
-        }
-
-        while(++codesIndex < codesCount) {
-
-            key = codes[codesIndex];
-            subPath = subs[key];
-            subKeys = subPath.keys;
-            subKeysCount = subKeys.length;
-
-            if (subKeysCount > 0) {
-
-                subSets = subPath.sets;
-                subSetsIndex = -1;
-                subSetsCount = subSets.length;
-                firstSubKey = subKeys[0];
-
-                while (++subSetsIndex < subSetsCount) {
-
-                    pathset = subSets[subSetsIndex];
-                    pathsetIndex = -1;
-                    pathsetCount = pathset.length;
-                    pathsetClone = new Array(pathsetCount + 1);
-                    pathsetClone[0] = subKeysCount > 1 && subKeys || firstSubKey;
-
-                    while (++pathsetIndex < pathsetCount) {
-                        pathsetClone[pathsetIndex + 1] = pathset[pathsetIndex];
-                    }
-
-                    pathsets[pathsetsCount++] = pathsetClone;
-                }
-            }
-        }
-    } else {
-        subKeysCount = getSortedKeys(pathmap, subKeys);
-        if (subKeysCount > 1) {
-            pathsets[pathsetsCount++] = [subKeys];
-        } else {
-            pathsets[pathsetsCount++] = subKeys;
-        }
-        while (++subKeysIndex < subKeysCount) {
-            code = getHashCode(code + subKeys[subKeysIndex]);
-        }
-    }
-
-    return {
-        code: code,
-        sets: pathsets
-    };
-}
-
-function collapsePathSetIndexes(pathset) {
-
-    var keysetIndex = -1;
-    var keysetCount = pathset.length;
-
-    while (++keysetIndex < keysetCount) {
-        var keyset = pathset[keysetIndex];
-        if (isArray(keyset)) {
-            pathset[keysetIndex] = collapseIndex(keyset);
-        }
-    }
-
-    return pathset;
-}
-
-/**
- * Collapse range indexers, e.g. when there is a continuous
- * range in an array, turn it into an object instead:
- *
- * [1,2,3,4,5,6] => {"from":1, "to":6}
- *
- * @private
- */
-function collapseIndex(keyset) {
-
-    // Do we need to dedupe an indexer keyset if they're duplicate consecutive integers?
-    // var hash = {};
-    var keyIndex = -1;
-    var keyCount = keyset.length - 1;
-    var isSparseRange = keyCount > 0;
-
-    while (++keyIndex <= keyCount) {
-
-        var key = keyset[keyIndex];
-
-        if (!isNumber(key) /* || hash[key] === true*/ ) {
-            isSparseRange = false;
-            break;
-        }
-        // hash[key] = true;
-        // Cast number indexes to integers.
-        keyset[keyIndex] = parseInt(key, 10);
-    }
-
-    if (isSparseRange === true) {
-
-        keyset.sort(sortListAscending);
-
-        var from = keyset[0];
-        var to = keyset[keyCount];
-
-        // If we re-introduce deduped integer indexers, change this comparson to "===".
-        if (to - from <= keyCount) {
-            return {
-                from: from,
-                to: to
-            };
-        }
-    }
-
-    return keyset;
-}
-
-function sortListAscending(a, b) {
-    return a - b;
-}
-
-/* jshint forin: false */
-function getSortedKeys(map, keys, sort) {
-    var len = 0;
-    for (var key in map) {
-        keys[len++] = key;
-    }
-    if (len > 1) {
-        keys.sort(sort);
-    }
-    return len;
-}
-
-function getHashCode(key) {
-    var code = 5381;
-    var index = -1;
-    var count = key.length;
-    while (++index < count) {
-        code = (code << 5) + code + key.charCodeAt(index);
-    }
-    return String(code);
-}
-
-/**
- * Return true if argument is a number or can be cast to a number
- * @private
- */
-function isNumber(val) {
-    // parseFloat NaNs numeric-cast false positives (null|true|false|"")
-    // ...but misinterprets leading-number strings, particularly hex literals ("0x...")
-    // subtraction forces infinities to NaN
-    // adding 1 corrects loss of precision from parseFloat (#15100)
-    return !isArray(val) && (val - parseFloat(val) + 1) >= 0;
-}
-
-
-},{}],138:[function(require,module,exports){
-var iterateKeySet = require('./../lib/iterateKeySet');
-var isArray = Array.isArray;
-
-/**
- * @param {Array} paths -
- * @returns {Object} -
- */
-module.exports = function toTree(paths) {
-    return paths.reduce(function(acc, path) {
-        innerToTree(acc, path, 0);
-        return acc;
-    }, {});
-};
-
-function innerToTree(seed, path, depth) {
-
-    var keySet = path[depth];
-    var iteratorNote = {};
-    var key;
-    var nextDepth = depth + 1;
-
-    key = iterateKeySet(keySet, iteratorNote);
-
-    do {
-
-        var next = seed[key];
-        if (!next) {
-            if (nextDepth === path.length) {
-                seed[key] = null;
-            } else {
-                next = seed[key] = {};
-            }
-        }
-
-        if (nextDepth < path.length) {
-            innerToTree(next, path, nextDepth);
-        }
-
-        if (!iteratorNote.done) {
-            key = iterateKeySet(keySet, iteratorNote);
-        }
-    } while (!iteratorNote.done);
-}
-
-
-},{"./../lib/iterateKeySet":134}],139:[function(require,module,exports){
 
 },{}],140:[function(require,module,exports){
 'use strict';
@@ -7936,7 +7947,7 @@ function doResolve(fn, promise) {
   }
 }
 
-},{"asap/raw":119}],142:[function(require,module,exports){
+},{"asap/raw":8}],142:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -8160,4 +8171,4 @@ Promise.prototype.nodeify = function (callback, ctx) {
   });
 }
 
-},{"./core.js":141,"asap":118}]},{},[1]);
+},{"./core.js":141,"asap":7}]},{},[6]);

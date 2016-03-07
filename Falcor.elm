@@ -12,6 +12,8 @@ type alias Options =
   , url: Maybe String
   }
 
+type Error = CommonError
+
 createModel : Options -> Model
 createModel = Native.Falcor.createModel
 
@@ -26,4 +28,8 @@ hashToList lst =
     lst
   |> List.map snd
 
-
+{- 
+load : (List String) -> Json.Decoder a -> Task Error a
+load falcorQuery decoder =
+  Falcor.get falcorModel falcorQuery |> Task.map (Json.decodeValue decoder)
+-}
