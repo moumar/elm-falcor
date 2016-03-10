@@ -450,7 +450,6 @@ Elm.Native.Falcor.make = function make(localRuntime) {
           .apply(model, args)
           .then(function(resp) {
             if (resp && resp.json) {
-              console.log("resp", resp);
               var out = filterPathKeys(resp.json);
               console.log("resp", args, out);
               return callback(Task.succeed(out));
