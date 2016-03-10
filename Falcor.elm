@@ -21,6 +21,10 @@ createModel = Native.Falcor.createModel
 get : Model -> List String -> Task err Json.Value
 get = Native.Falcor.get
 
+setValue : Model -> String -> String -> Task err ()
+setValue = Native.Falcor.setValue
+
+
 hashToList : List (String, a) -> List a
 hashToList lst =
   List.sortBy
@@ -28,7 +32,7 @@ hashToList lst =
     lst
   |> List.map snd
 
-{- 
+{-
 load : (List String) -> Json.Decoder a -> Task Error a
 load falcorQuery decoder =
   Falcor.get falcorModel falcorQuery |> Task.map (Json.decodeValue decoder)

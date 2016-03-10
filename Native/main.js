@@ -26,7 +26,7 @@ Elm.Native.Falcor.make = function make(localRuntime) {
     var Task = Elm.Native.Task.make(localRuntime);
     var Utils = Elm.Native.Utils;
     var Maybe = Elm.Maybe.make(localRuntime);
-
+    window.Utils = Utils
     function createModel(options) {
       var modelOptions = {};
       if (options.url.ctor === 'Just') {
@@ -69,6 +69,18 @@ Elm.Native.Falcor.make = function make(localRuntime) {
       });
     }
 
+    function setValue(model, path, value) {
+      return Task.asyncFunction(function(callback) {
+        model.setValue(path, value)
+          .then(function() {
+            callback(Task.succeed(Utils.tuple0));
+          })
+          .catch(function(err) {
+            callback(Task.fail(err));
+          })
+      })
+    }
+
     function set() {
 
     }
@@ -80,6 +92,7 @@ Elm.Native.Falcor.make = function make(localRuntime) {
     return localRuntime.Native.Falcor.values = {
       createModel: createModel,
       get: F2(get),
+      setValue: F3(setValue),
       set: set,
       call: call
     };
