@@ -439,11 +439,7 @@ Elm.Native.Falcor.make = function make(localRuntime) {
     }
 
     function get(model, dataList) {
-      var args = [];
-      while (dataList.ctor !== '[]') {
-        args.push(dataList._0);
-        dataList = dataList._1;
-      }
+      var args = convertArray(dataList);
       return Task.asyncFunction(function(callback) {
         // console.log(args);
         model.get
@@ -483,16 +479,37 @@ Elm.Native.Falcor.make = function make(localRuntime) {
 
     }
 
-    function call() {
+    function call(model, functionPath, _args) { //}, _refSuffixes, thisPaths) {
+      var args = convertArray(_args);
+      // var refSuffixes = convertArray(_refSuffixes);
 
+      return Task.asyncFunction(function(callback) {
+        model.call(functionPath, args) //, refSuffixes, thisPaths)
+          .then(function(resp) {
+            if (resp && resp.json) {
+              var out = filterPathKeys(resp.json);
+              console.log("respcall", args, out);
+              return callback(Task.succeed(out));
+            } else {
+              // console.log("empty response");
+              // return callback(Task.succeed({}));
+              throw "empty response";
+            }
+          })
+          .catch(function(err) {
+            console.log("err", err);
+            return callback(Task.fail(err));
+          });
+      });
     }
+
     // return the object of your module's stuff!
     return localRuntime.Native.Falcor.values = {
       createModel: createModel,
       get: F2(get),
       setValue: F3(setValue),
       set: set,
-      call: call
+      call: F3(call)
     };
 };
 
@@ -512,6 +529,15 @@ function filterPathKeys(obj) {
     });
   }
   return out;
+}
+
+function convertArray(_args) {
+  var args = [];
+  while (_args.ctor !== '[]') {
+    args.push(_args._0);
+    _args = _args._1;
+  }
+  return args;
 }
 
 },{"falcor":60,"falcor-http-datasource":1}],7:[function(require,module,exports){

@@ -24,6 +24,9 @@ get = Native.Falcor.get
 setValue : Model -> String -> String -> Task err ()
 setValue = Native.Falcor.setValue
 
+call : Model -> String -> List String -> Task err ()
+call = Native.Falcor.call
+
 
 hashToList : List (String, a) -> List a
 hashToList lst =
