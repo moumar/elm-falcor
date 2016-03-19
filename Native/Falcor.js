@@ -516,11 +516,11 @@ Elm.Native.Falcor.make = function make(localRuntime) {
 
 function filterPathKeys(obj) {
   var out = {};
-  if (obj != null) {
+  if (obj !== null) {
     Object.keys(obj).forEach(function(key) {
-      if(key != "$__path") {
+      if(key !== "$__path") {
         var val = obj[key];
-        if ((typeof val) == "object" && !(val instanceof Array)) {
+        if ((typeof val) === "object" && !(val instanceof Array)) {
           out[key] = filterPathKeys(val);
         } else {
           out[key] = val;
