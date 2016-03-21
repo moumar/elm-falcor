@@ -462,6 +462,7 @@ Elm.Native.Falcor.make = function make(localRuntime) {
     }
 
     function setValue(model, path, value) {
+      console.log(model, path, value);
       return Task.asyncFunction(function(callback) {
         model.setValue(path, value)
           .then(function() {

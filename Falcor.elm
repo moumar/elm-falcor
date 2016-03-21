@@ -17,20 +17,19 @@ type Error = CommonError
 
 type Path
   = PathList (List Path)
-  -- | PathPrefixed (List Path) (List Path)
   | PathString String
   | PathStrings (List String)
   | Range Int Int
 
-convertPath : List Path -> List Json.Value
-convertPath paths =
+convertPaths : List Path -> List Json.Value
+convertPaths paths =
   let _ = ""
   in
     List.map
     (\path ->
       case path of
         PathList lst ->
-          Json.list <| convertPath lst
+          Json.list <| convertPaths lst
         PathString str ->
           Json.string str
         PathStrings arr ->
@@ -42,7 +41,7 @@ convertPath paths =
 {-
 flattenPath : List Path -> List Path
 flattenPath paths =
-  List.map (\path -> 
+  List.map (\path ->
     case path of
       PathPrefixed prefix lst ->
         List.map (\p -> PathList <| prefix ++ [ p ]) lst
@@ -54,10 +53,10 @@ createModel : Options -> Model
 createModel = Native.Falcor.createModel
 
 get : Model -> List Path -> Task err Json.Value
-get model paths = Native.Falcor.get model (convertPath paths |> Json.list)
+get model paths = Native.Falcor.get model (convertPaths paths |> Json.list)
 
-setValue : Model -> String -> String -> Task err ()
-setValue = Native.Falcor.setValue
+setValue : Model -> List String -> String -> Task err ()
+setValue model path value = Native.Falcor.setValue model (Json.list <| List.map Json.string path) value
 
 call : Model -> String -> List String -> Task err ()
 call = Native.Falcor.call
@@ -101,4 +100,3 @@ prefixPath prefix lst =
          )
     )
     lst
-
