@@ -40,10 +40,8 @@ Elm.Native.Falcor.make = function make(localRuntime) {
       return model;
     }
 
-    function get(model, dataList) {
-      var args = convertArray(dataList);
+    function get(model, args) {
       return Task.asyncFunction(function(callback) {
-        // console.log(args);
         model.get
           .apply(model, args)
           .then(function(resp) {
@@ -81,8 +79,8 @@ Elm.Native.Falcor.make = function make(localRuntime) {
 
     }
 
-    function call(model, functionPath, _args) { //}, _refSuffixes, thisPaths) {
-      var args = convertArray(_args);
+    function call(model, functionPath, args) { //}, _refSuffixes, thisPaths) {
+      // var args = convertArray(_args);
       // var refSuffixes = convertArray(_refSuffixes);
 
       return Task.asyncFunction(function(callback) {
