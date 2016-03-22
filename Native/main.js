@@ -64,7 +64,7 @@ Elm.Native.Falcor.make = function make(localRuntime) {
     }
 
     function setValue(model, path, value) {
-      console.log(model, path, value);
+      // console.log(model, path, value);
       return Task.asyncFunction(function(callback) {
         model.setValue(path, value)
           .then(function() {
@@ -98,7 +98,7 @@ Elm.Native.Falcor.make = function make(localRuntime) {
             }
           })
           .catch(function(err) {
-            console.log("err", err);
+            console.log("callerr", err);
             return callback(Task.fail(err));
           });
       });

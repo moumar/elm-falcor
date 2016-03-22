@@ -56,10 +56,10 @@ get : Model -> List Path -> Task err Json.Value
 get model paths = Native.Falcor.get model (convertPaths paths |> Json.list)
 
 setValue : Model -> List String -> String -> Task err ()
-setValue model path value = Native.Falcor.setValue model (Json.list <| List.map Json.string path) value
+setValue model path value = Native.Falcor.setValue model (listToJs path) value
 
-call : Model -> String -> List String -> Task err ()
-call = Native.Falcor.call
+call : Model -> List String -> List String -> Task err ()
+call model path value = Native.Falcor.call model (listToJs path) (listToJs value)
 
 hashToList : List (String, a) -> List a
 hashToList lst =
@@ -67,6 +67,9 @@ hashToList lst =
     (fst >> String.toInt >> Result.withDefault -1)
     lst
   |> List.map snd
+
+listToJs : List String -> Json.Value
+listToJs = List.map Json.string >> Json.list
 
 {-
 load : (List String) -> Json.Decoder a -> Task Error a
