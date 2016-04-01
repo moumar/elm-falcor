@@ -26,24 +26,46 @@ Elm.Native.Falcor.make = function make(localRuntime) {
     var Task = Elm.Native.Task.make(localRuntime);
     var Utils = Elm.Native.Utils;
     var Maybe = Elm.Maybe.make(localRuntime);
-    window.Utils = Utils
-    function createModel(options) {
-      var modelOptions = {};
-      if (options.url.ctor === 'Just') {
-        modelOptions.source = new HttpDataSource(options.url._0);
+
+    function createModel(mdl) {
+      var modelOptions = {
+        /*
+        errorSelector: function(err) {
+          console.error(err);
+          return err;
+        }*/
+        // onChange: function(err) { console.log(this) }
+      };
+
+      if (mdl.url.ctor === 'Just') {
+        var opts = {};
+        if (mdl.headers.ctor === 'Just') {
+          opts.headers = {};
+          convertArray(mdl.headers._0).forEach(function(tuple) {
+            opts.headers[tuple._0] = tuple._1;
+          });
+          // opts.headers = mdl.headers._0;
+        }
+        modelOptions.source = new HttpDataSource(mdl.url._0, opts);
       }
-      if (options.cache.ctor === 'Just') {
-        modelOptions.cache = options.cache._0;
+
+      if (mdl.cache.ctor === 'Just') {
+        modelOptions.cache = mdl.cache._0;
       }
+
       var model = new falcor.Model(modelOptions);
+      console.log(modelOptions);
+
+      mdl.model = {ctor: "Just", _0: model};
       window.model = model;
-      return model;
+      return mdl;
     }
 
     function get(model, args) {
       return Task.asyncFunction(function(callback) {
-        model.get
-          .apply(model, args)
+        var falcorModel = getFalcorModel(model);
+        falcorModel.get
+          .apply(falcorModel, args)
           .then(function(resp) {
             if (resp && resp.json) {
               var out = filterPathKeys(resp.json);
@@ -66,7 +88,7 @@ Elm.Native.Falcor.make = function make(localRuntime) {
     function setValue(model, path, value) {
       // console.log(model, path, value);
       return Task.asyncFunction(function(callback) {
-        model.setValue(path, value)
+        getFalcorModel(model).setValue(path, value)
           .then(function() {
             callback(Task.succeed(Utils.tuple0));
           })
@@ -85,11 +107,11 @@ Elm.Native.Falcor.make = function make(localRuntime) {
       // var refSuffixes = convertArray(_refSuffixes);
 
       return Task.asyncFunction(function(callback) {
-        model.call(functionPath, args) //, refSuffixes, thisPaths)
+        (getFalcorModel(model)).call(functionPath, args) //, refSuffixes, thisPaths)
           .then(function(resp) {
             if (resp && resp.json) {
               var out = filterPathKeys(resp.json);
-              console.log("respcall", args, out);
+              // console.log("respcall", args, out);
               return callback(Task.succeed(out));
             } else {
               // console.log("empty response");
@@ -139,4 +161,8 @@ function convertArray(_args) {
     _args = _args._1;
   }
   return args;
+}
+
+function getFalcorModel(elmModel) {
+  return elmModel.model._0;
 }

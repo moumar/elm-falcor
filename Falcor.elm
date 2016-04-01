@@ -8,11 +8,11 @@ import String
 import Json.Decode as Json exposing ((:=))
 import Native.Falcor
 
-type alias Model = Json.Value
-
-type alias Options =
+type alias Model =
   { cache: Maybe Json.Value
   , url: Maybe String
+  , headers: Maybe (List (String, String))
+  , model: Maybe Json.Value
   }
 
 type Error = CommonError
@@ -25,8 +25,6 @@ type Path
 
 convertPaths : List Path -> List Json.Encode.Value
 convertPaths paths =
-  let _ = ""
-  in
     List.map
     (\path ->
       case path of
@@ -40,19 +38,20 @@ convertPaths paths =
           Json.Encode.object [ ("from", Json.Encode.string <| toString <| from), ("to", Json.Encode.string <| toString <| to) ]
     ) paths
 
-{-
-flattenPath : List Path -> List Path
-flattenPath paths =
-  List.map (\path ->
-    case path of
-      PathPrefixed prefix lst ->
-        List.map (\p -> PathList <| prefix ++ [ p ]) lst
-      _ -> [ path ]
-  ) paths
--}
+cache: Json.Value -> Model -> Model
+cache c model = { model | cache = Just c}
 
-createModel : Options -> Model
-createModel = Native.Falcor.createModel
+init: Model
+init = Model Nothing Nothing Nothing Nothing
+
+url: String -> Model -> Model
+url arg model = { model | url = Just arg}
+
+headers : List (String, String) -> Model -> Model
+headers headers' model = { model | headers = Just headers' }
+
+setup : Model -> Model
+setup = Native.Falcor.createModel
 
 get : Model -> List Path -> Task err Json.Value
 get model paths = Native.Falcor.get model (convertPaths paths |> Json.Encode.list)
